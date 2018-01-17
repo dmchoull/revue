@@ -22,20 +22,23 @@
  * SOFTWARE.
  */
 
-package com.github.dmchoull.revue
+package com.github.dmchoull.revue.dialog
 
-import android.content.Context
-import com.github.dmchoull.revue.builder.RevueDialogBuilder
-import com.github.dmchoull.revue.builder.SimpleDialogBuilder
+import android.support.v7.app.AlertDialog
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 
-class Revue {
-    var dialogBuilder: RevueDialogBuilder = SimpleDialogBuilder()
+internal class RevueDialogTest {
+    @Test
+    @DisplayName("shows the alert dialog")
+    fun show() {
+        val alertDialog: AlertDialog = mock()
+        val revueDialog = SimpleRevueDialog(alertDialog)
 
-    fun showNow(context: Context) {
-        showDialog(context)
-    }
+        revueDialog.show()
 
-    private fun showDialog(context: Context) {
-        dialogBuilder.build(context).show()
+        verify(alertDialog).show()
     }
 }

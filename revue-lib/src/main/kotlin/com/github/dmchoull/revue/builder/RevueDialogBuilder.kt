@@ -22,20 +22,11 @@
  * SOFTWARE.
  */
 
-package com.github.dmchoull.revue
+package com.github.dmchoull.revue.builder
 
 import android.content.Context
-import com.github.dmchoull.revue.builder.RevueDialogBuilder
-import com.github.dmchoull.revue.builder.SimpleDialogBuilder
+import com.github.dmchoull.revue.dialog.RevueDialog
 
-class Revue {
-    var dialogBuilder: RevueDialogBuilder = SimpleDialogBuilder()
-
-    fun showNow(context: Context) {
-        showDialog(context)
-    }
-
-    private fun showDialog(context: Context) {
-        dialogBuilder.build(context).show()
-    }
+interface RevueDialogBuilder {
+    fun build(context: Context): RevueDialog
 }

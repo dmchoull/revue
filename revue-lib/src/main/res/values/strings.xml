@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Revue</string>
+
+    <string name="default_rate_message">Please rate this app</string>
+    <string name="default_positive_btn">OK</string>
+    <string name="default_neutral_btn">Later</string>
+    <string name="default_negative_btn">No Thanks</string>
 </resources>

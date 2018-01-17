@@ -22,20 +22,14 @@
  * SOFTWARE.
  */
 
-package com.github.dmchoull.revue
+package com.github.dmchoull.revue.dialog
 
-import android.content.Context
-import com.github.dmchoull.revue.builder.RevueDialogBuilder
-import com.github.dmchoull.revue.builder.SimpleDialogBuilder
+import android.support.v7.app.AlertDialog
 
-class Revue {
-    var dialogBuilder: RevueDialogBuilder = SimpleDialogBuilder()
-
-    fun showNow(context: Context) {
-        showDialog(context)
-    }
-
-    private fun showDialog(context: Context) {
-        dialogBuilder.build(context).show()
+abstract class RevueDialog(private val dialog: AlertDialog) {
+    open fun show() {
+        dialog.show()
     }
 }
+
+class SimpleRevueDialog(dialog: AlertDialog) : RevueDialog(dialog)

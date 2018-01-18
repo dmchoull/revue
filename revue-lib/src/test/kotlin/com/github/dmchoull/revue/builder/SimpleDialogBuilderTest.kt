@@ -25,13 +25,18 @@
 package com.github.dmchoull.revue.builder
 
 import android.app.Activity
+import android.content.DialogInterface
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import org.amshove.kluent.shouldBe
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowDialog
 
 @RunWith(RobolectricTestRunner::class)
@@ -52,6 +57,9 @@ class SimpleDialogBuilderTest {
         val dialog = builder
                 .title("Title")
                 .message("Message")
+                .positiveButton("OK")
+                .neutralButton("Later")
+                .negativeButton("No Thanks")
                 .build(activity)
 
         dialog.show()
@@ -63,8 +71,11 @@ class SimpleDialogBuilderTest {
     @Test
     fun buildWithResourceIds() {
         val dialog = builder
-                .title(android.R.string.ok)
+                .title(android.R.string.dialog_alert_title)
                 .message(android.R.string.yes)
+                .positiveButton(android.R.string.ok)
+                .neutralButton(android.R.string.cancel)
+                .negativeButton(android.R.string.no)
                 .build(activity)
 
         dialog.show()
@@ -72,4 +83,55 @@ class SimpleDialogBuilderTest {
         val latestDialog = ShadowDialog.getLatestDialog()
         latestDialog.isShowing shouldBe true
     }
+
+    @Test
+    fun canSetPositiveButtonClickListener() {
+        val dummy: Dummy = mock()
+
+        val dialog = builder
+                .positiveButton("OK", DialogInterface.OnClickListener { _, _ -> dummy.doSomething() })
+                .build(activity)
+
+        dialog.show()
+        clickDialogButton(DialogInterface.BUTTON_POSITIVE)
+
+        verify(dummy).doSomething()
+    }
+
+    private fun clickDialogButton(button: Int) {
+        val alertDialog: AlertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
+        alertDialog.getButton(button).performClick()
+    }
+
+    @Test
+    fun canSetNeutralButtonClickListener() {
+        val dummy: Dummy = mock()
+
+        val dialog = builder
+                .neutralButton("Later", DialogInterface.OnClickListener { _, _ -> dummy.doSomething() })
+                .build(activity)
+
+        dialog.show()
+        clickDialogButton(DialogInterface.BUTTON_NEUTRAL)
+
+        verify(dummy).doSomething()
+    }
+
+    @Test
+    fun canSetNegativeButtonClickListener() {
+        val dummy: Dummy = mock()
+
+        val dialog = builder
+                .negativeButton("No", DialogInterface.OnClickListener { _, _ -> dummy.doSomething() })
+                .build(activity)
+
+        dialog.show()
+        clickDialogButton(DialogInterface.BUTTON_NEGATIVE)
+
+        verify(dummy).doSomething()
+    }
+}
+
+interface Dummy {
+    fun doSomething()
 }

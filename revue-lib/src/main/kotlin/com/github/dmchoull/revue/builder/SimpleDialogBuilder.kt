@@ -26,56 +26,35 @@ package com.github.dmchoull.revue.builder
 
 import android.content.Context
 import android.content.DialogInterface
+import android.support.annotation.StringRes
 import android.support.v7.app.AlertDialog
 import com.github.dmchoull.revue.R
 import com.github.dmchoull.revue.dialog.RevueDialog
 import com.github.dmchoull.revue.dialog.SimpleRevueDialog
 
 @Suppress("MemberVisibilityCanBePrivate")
-class SimpleDialogBuilder : RevueDialogBuilder {
-    var title: String? = null
-        private set
-
-    var titleRes: Int? = null
-        private set
-
-    var message: String? = null
-        private set
-
-    var messageRes: Int? = null
-        private set
-
-    var positiveButton: String? = null
-        private set
-
-    var positiveButtonRes: Int? = null
-        private set
-
-    var neutralButton: String? = null
-        private set
-
-    var neutralButtonRes: Int? = null
-        private set
-
-    var negativeButton: String? = null
-        private set
-
-    var negativeButtonRes: Int? = null
-        private set
-
-    private var positiveButtonListener: DialogInterface.OnClickListener? = null
-
-    private var neutralButtonListener: DialogInterface.OnClickListener? = null
-
-    private var negativeButtonListener: DialogInterface.OnClickListener? = null
-
+class SimpleDialogBuilder(
+        private var title: String? = null,
+        private var titleRes: Int = R.string.default_rate_title,
+        private var message: String? = null,
+        private var messageRes: Int = R.string.default_rate_message,
+        private var positiveButton: String? = null,
+        private var positiveButtonRes: Int = R.string.default_positive_btn,
+        private var positiveButtonListener: DialogInterface.OnClickListener? = null,
+        private var neutralButton: String? = null,
+        private var neutralButtonRes: Int = R.string.default_neutral_btn,
+        private var neutralButtonListener: DialogInterface.OnClickListener? = null,
+        private var negativeButton: String? = null,
+        private var negativeButtonRes: Int = R.string.default_negative_btn,
+        private var negativeButtonListener: DialogInterface.OnClickListener? = null
+) : RevueDialogBuilder {
     fun title(title: String) = apply { this.title = title }
 
-    fun title(title: Int) = apply { this.titleRes = title }
+    fun title(@StringRes title: Int) = apply { this.titleRes = title }
 
     fun message(message: String) = apply { this.message = message }
 
-    fun message(message: Int) = apply { this.messageRes = message }
+    fun message(@StringRes message: Int) = apply { this.messageRes = message }
 
     @JvmOverloads
     fun positiveButton(positiveButton: String, listener: DialogInterface.OnClickListener? = null) =
@@ -85,11 +64,13 @@ class SimpleDialogBuilder : RevueDialogBuilder {
             }
 
     @JvmOverloads
-    fun positiveButton(positiveButton: Int, listener: DialogInterface.OnClickListener? = null) =
+    fun positiveButton(@StringRes positiveButton: Int, listener: DialogInterface.OnClickListener? = null) =
             apply {
                 this.positiveButtonRes = positiveButton
                 this.positiveButtonListener = listener
             }
+
+    fun positiveButtonListener(listener: DialogInterface.OnClickListener) = apply { positiveButtonListener = listener }
 
     @JvmOverloads
     fun neutralButton(neutralButton: String, listener: DialogInterface.OnClickListener? = null) =
@@ -99,11 +80,13 @@ class SimpleDialogBuilder : RevueDialogBuilder {
             }
 
     @JvmOverloads
-    fun neutralButton(neutralButton: Int, listener: DialogInterface.OnClickListener? = null) =
+    fun neutralButton(@StringRes neutralButton: Int, listener: DialogInterface.OnClickListener? = null) =
             apply {
                 this.neutralButtonRes = neutralButton
                 this.neutralButtonListener = listener
             }
+
+    fun neutralButtonListener(listener: DialogInterface.OnClickListener) = apply { neutralButtonListener = listener }
 
     @JvmOverloads
     fun negativeButton(negativeButton: String, listener: DialogInterface.OnClickListener? = null) =
@@ -113,11 +96,13 @@ class SimpleDialogBuilder : RevueDialogBuilder {
             }
 
     @JvmOverloads
-    fun negativeButton(negativeButton: Int, listener: DialogInterface.OnClickListener? = null) =
+    fun negativeButton(@StringRes negativeButton: Int, listener: DialogInterface.OnClickListener? = null) =
             apply {
                 this.negativeButtonRes = negativeButton
                 this.negativeButtonListener = listener
             }
+
+    fun negativeButtonListener(listener: DialogInterface.OnClickListener) = apply { negativeButtonListener = listener }
 
     override fun build(context: Context): RevueDialog {
         val dialogBuilder = AlertDialog.Builder(context)
@@ -133,47 +118,37 @@ class SimpleDialogBuilder : RevueDialogBuilder {
     }
 
     private fun setDialogTitle(dialogBuilder: AlertDialog.Builder) {
-        val title = titleRes ?: title ?: ""
-
         when (title) {
-            is Int -> dialogBuilder.setTitle(title)
             is String -> dialogBuilder.setTitle(title)
+            else -> dialogBuilder.setTitle(titleRes)
         }
     }
 
     private fun setDialogMessage(dialogBuilder: AlertDialog.Builder) {
-        val message = messageRes ?: message ?: R.string.default_rate_message
-
         when (message) {
-            is Int -> dialogBuilder.setMessage(message)
             is String -> dialogBuilder.setMessage(message)
+            else -> dialogBuilder.setMessage(messageRes)
         }
     }
 
     private fun setDialogPositiveButton(dialogBuilder: AlertDialog.Builder) {
-        val positiveButton = positiveButtonRes ?: positiveButton ?: R.string.default_positive_btn
-
         when (positiveButton) {
-            is Int -> dialogBuilder.setPositiveButton(positiveButton, positiveButtonListener)
             is String -> dialogBuilder.setPositiveButton(positiveButton, positiveButtonListener)
+            else -> dialogBuilder.setPositiveButton(positiveButtonRes, positiveButtonListener)
         }
     }
 
     private fun setDialogNeutralButton(dialogBuilder: AlertDialog.Builder) {
-        val neutralButton = neutralButtonRes ?: neutralButton ?: R.string.default_neutral_btn
-
         when (neutralButton) {
-            is Int -> dialogBuilder.setNeutralButton(neutralButton, neutralButtonListener)
             is String -> dialogBuilder.setNeutralButton(neutralButton, neutralButtonListener)
+            else -> dialogBuilder.setNeutralButton(neutralButtonRes, neutralButtonListener)
         }
     }
 
     private fun setDialogNegativeButton(dialogBuilder: AlertDialog.Builder) {
-        val negativeButton = negativeButtonRes ?: negativeButton ?: R.string.default_negative_btn
-
         when (negativeButton) {
-            is Int -> dialogBuilder.setNegativeButton(negativeButton, negativeButtonListener)
             is String -> dialogBuilder.setNegativeButton(negativeButton, negativeButtonListener)
+            else -> dialogBuilder.setNegativeButton(negativeButtonRes, negativeButtonListener)
         }
     }
 }

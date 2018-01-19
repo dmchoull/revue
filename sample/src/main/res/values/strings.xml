@@ -4,4 +4,5 @@
     <string name="show_maybe">Show Maybe</string>
     <string name="simple_dialog">Simple Dialog</string>
     <string name="rating_dialog">Rating Dialog</string>
+    <string name="rating_message">Please give us a rating</string>
 </resources>

@@ -132,23 +132,44 @@ class SimpleDialogBuilder(
     }
 
     private fun setDialogPositiveButton(dialogBuilder: AlertDialog.Builder) {
+        val listener = dialogClickListener(positiveButtonListener, this::onPositiveClick)
+
         when (positiveButton) {
-            is String -> dialogBuilder.setPositiveButton(positiveButton, positiveButtonListener)
-            else -> dialogBuilder.setPositiveButton(positiveButtonRes, positiveButtonListener)
+            is String -> dialogBuilder.setPositiveButton(positiveButton, listener)
+            else -> dialogBuilder.setPositiveButton(positiveButtonRes, listener)
         }
+    }
+
+    private fun onPositiveClick() {
     }
 
     private fun setDialogNeutralButton(dialogBuilder: AlertDialog.Builder) {
+        val listener = dialogClickListener(neutralButtonListener, this::onNeutralClick)
+
         when (neutralButton) {
-            is String -> dialogBuilder.setNeutralButton(neutralButton, neutralButtonListener)
-            else -> dialogBuilder.setNeutralButton(neutralButtonRes, neutralButtonListener)
+            is String -> dialogBuilder.setNeutralButton(neutralButton, listener)
+            else -> dialogBuilder.setNeutralButton(neutralButtonRes, listener)
         }
     }
 
+    private fun onNeutralClick() {
+    }
+
     private fun setDialogNegativeButton(dialogBuilder: AlertDialog.Builder) {
+        val listener = dialogClickListener(negativeButtonListener, this::onNegativeClick)
+
         when (negativeButton) {
-            is String -> dialogBuilder.setNegativeButton(negativeButton, negativeButtonListener)
-            else -> dialogBuilder.setNegativeButton(negativeButtonRes, negativeButtonListener)
+            is String -> dialogBuilder.setNegativeButton(negativeButton, listener)
+            else -> dialogBuilder.setNegativeButton(negativeButtonRes, listener)
         }
     }
+
+    private fun onNegativeClick() {
+    }
 }
+
+private fun dialogClickListener(listener: DialogInterface.OnClickListener?, action: () -> Unit) =
+        { dialog: DialogInterface, which: Int ->
+            listener?.onClick(dialog, which)
+            action()
+        }

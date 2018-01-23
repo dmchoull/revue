@@ -31,6 +31,7 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import org.amshove.kluent.shouldBeInstanceOf
+import org.amshove.kluent.shouldEqual
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -39,12 +40,14 @@ internal class RevueTest {
     private lateinit var context: Context
     private lateinit var dialog: RevueDialog
     private lateinit var revue: Revue
+    private lateinit var storage: InMemoryStorage
 
     @BeforeEach
     fun setUp() {
         context = mock()
         dialog = mock()
-        revue = Revue()
+        storage = InMemoryStorage()
+        revue = Revue(localStorage = storage)
     }
 
     @Test
@@ -63,5 +66,23 @@ internal class RevueTest {
         revue.showNow(context)
 
         verify(dialog).show()
+    }
+
+    @Test
+    @DisplayName("init sets times launched to 1 when not previously set")
+    fun initTimesLaunchedFirstCall() {
+        revue.init(context)
+
+        storage.getInt(TIMES_LAUNCHED, default = 0) shouldEqual 1
+    }
+
+    @Test
+    @DisplayName("init increments times launched")
+    fun initTimesLaunched() {
+        storage.setTestValues(TIMES_LAUNCHED to 1)
+
+        revue.init(context)
+
+        storage.getInt(TIMES_LAUNCHED, default = 0) shouldEqual 2
     }
 }

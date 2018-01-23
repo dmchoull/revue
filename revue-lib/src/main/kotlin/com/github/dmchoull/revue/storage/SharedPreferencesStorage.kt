@@ -22,31 +22,41 @@
  * SOFTWARE.
  */
 
-package com.github.dmchoull.revue
+package com.github.dmchoull.revue.storage
 
 import android.content.Context
-import com.github.dmchoull.revue.builder.RevueDialogBuilder
-import com.github.dmchoull.revue.builder.SimpleDialogBuilder
-import com.github.dmchoull.revue.storage.LocalStorage
-import com.github.dmchoull.revue.storage.SharedPreferencesStorage
+import android.content.SharedPreferences
+import java.lang.IllegalStateException
 
-const val TIMES_LAUNCHED = "REVUE_TIMES_LAUNCHED"
+private const val REVUE_PREFS = "REVUE_PREFS"
 
-class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage()) {
-    var dialogBuilder: RevueDialogBuilder = SimpleDialogBuilder()
+class SharedPreferencesStorage : LocalStorage {
+    private var preferences: SharedPreferences? = null
 
-    fun init(context: Context) {
-        localStorage.init(context)
-
-        val timesLaunched = localStorage.getInt(TIMES_LAUNCHED, default = 0)
-        localStorage.setInt(TIMES_LAUNCHED, timesLaunched + 1)
+    override fun init(context: Context) {
+        preferences = context.getSharedPreferences(REVUE_PREFS, Context.MODE_PRIVATE)
     }
 
-    fun showNow(context: Context) {
-        showDialog(context)
+    override fun setInt(key: String, value: Int) {
+        val prefs = getPrefs()
+        val editor = prefs.edit()
+        editor.putInt(key, value)
+        editor.apply()
     }
 
-    private fun showDialog(context: Context) {
-        dialogBuilder.build(context).show()
+    override fun getInt(key: String, default: Int): Int =
+            getPrefs().getInt(key, default)
+
+    override fun setString(key: String, value: String) {
+        val prefs = getPrefs()
+        val editor = prefs.edit()
+        editor.putString(key, value)
+        editor.apply()
     }
+
+    override fun getString(key: String, default: String): String =
+            getPrefs().getString(key, default)
+
+    private fun getPrefs() =
+            preferences ?: throw IllegalStateException("You must call init before get/set")
 }

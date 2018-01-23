@@ -25,28 +25,41 @@
 package com.github.dmchoull.revue
 
 import android.content.Context
-import com.github.dmchoull.revue.builder.RevueDialogBuilder
-import com.github.dmchoull.revue.builder.SimpleDialogBuilder
 import com.github.dmchoull.revue.storage.LocalStorage
-import com.github.dmchoull.revue.storage.SharedPreferencesStorage
 
-const val TIMES_LAUNCHED = "REVUE_TIMES_LAUNCHED"
+internal class InMemoryStorage : LocalStorage {
+    private val storage: MutableMap<String, Any> = mutableMapOf()
+    private var initialized = false
 
-class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage()) {
-    var dialogBuilder: RevueDialogBuilder = SimpleDialogBuilder()
-
-    fun init(context: Context) {
-        localStorage.init(context)
-
-        val timesLaunched = localStorage.getInt(TIMES_LAUNCHED, default = 0)
-        localStorage.setInt(TIMES_LAUNCHED, timesLaunched + 1)
+    fun setTestValues(vararg pairs: Pair<String, Any>) {
+        storage.putAll(from = mapOf(*pairs))
     }
 
-    fun showNow(context: Context) {
-        showDialog(context)
+    override fun init(context: Context) {
+        initialized = true
     }
 
-    private fun showDialog(context: Context) {
-        dialogBuilder.build(context).show()
+    override fun setInt(key: String, value: Int) {
+        checkInitialized()
+        storage[key] = value
+    }
+
+    override fun getInt(key: String, default: Int): Int {
+        checkInitialized()
+        return storage[key] as? Int ?: default
+    }
+
+    override fun setString(key: String, value: String) {
+        checkInitialized()
+        storage[key] = value
+    }
+
+    override fun getString(key: String, default: String): String {
+        checkInitialized()
+        return storage[key] as? String ?: default
+    }
+
+    private fun checkInitialized() {
+        if (!initialized) throw IllegalStateException()
     }
 }

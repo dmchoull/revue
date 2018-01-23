@@ -22,31 +22,18 @@
  * SOFTWARE.
  */
 
-package com.github.dmchoull.revue
+package com.github.dmchoull.revue.storage
 
 import android.content.Context
-import com.github.dmchoull.revue.builder.RevueDialogBuilder
-import com.github.dmchoull.revue.builder.SimpleDialogBuilder
-import com.github.dmchoull.revue.storage.LocalStorage
-import com.github.dmchoull.revue.storage.SharedPreferencesStorage
 
-const val TIMES_LAUNCHED = "REVUE_TIMES_LAUNCHED"
+interface LocalStorage {
+    fun init(context: Context)
 
-class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage()) {
-    var dialogBuilder: RevueDialogBuilder = SimpleDialogBuilder()
+    fun setInt(key: String, value: Int)
 
-    fun init(context: Context) {
-        localStorage.init(context)
+    fun getInt(key: String, default: Int): Int
 
-        val timesLaunched = localStorage.getInt(TIMES_LAUNCHED, default = 0)
-        localStorage.setInt(TIMES_LAUNCHED, timesLaunched + 1)
-    }
+    fun setString(key: String, value: String)
 
-    fun showNow(context: Context) {
-        showDialog(context)
-    }
-
-    private fun showDialog(context: Context) {
-        dialogBuilder.build(context).show()
-    }
+    fun getString(key: String, default: String): String
 }

@@ -10,8 +10,8 @@ import com.github.dmchoull.revue.builder.RevueDialogBuilder;
 import com.github.dmchoull.revue.builder.SimpleDialogBuilder;
 
 public class MainActivity extends AppCompatActivity {
-    // usually would be injected with configuration already done
-    private final Revue revue = new Revue();
+    // usually would be provided via dependency injection with configuration already done
+    private final Revue revue = ((SampleApplication) getApplication()).getRevue();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

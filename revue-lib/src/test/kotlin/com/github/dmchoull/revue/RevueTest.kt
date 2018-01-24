@@ -29,11 +29,14 @@ import com.github.dmchoull.revue.builder.SimpleDialogBuilder
 import com.github.dmchoull.revue.dialog.RevueDialog
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
+import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeInstanceOf
 import org.amshove.kluent.shouldEqual
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class RevueTest {
@@ -57,6 +60,30 @@ internal class RevueTest {
     }
 
     @Test
+    @DisplayName("has default config")
+    fun defaultConfig() {
+        revue.config shouldEqual RevueConfig(timesLaunched = 3)
+    }
+
+    @Test
+    @DisplayName("init sets times launched to 1 when not previously set")
+    fun initTimesLaunchedFirstCall() {
+        revue.init(context)
+
+        storage.getInt(TIMES_LAUNCHED_KEY, default = 0) shouldEqual 1
+    }
+
+    @Test
+    @DisplayName("init increments times launched")
+    fun initTimesLaunched() {
+        storage.setTestValues(TIMES_LAUNCHED_KEY to 1)
+
+        revue.init(context)
+
+        storage.getInt(TIMES_LAUNCHED_KEY, default = 0) shouldEqual 2
+    }
+
+    @Test
     @DisplayName("showNow immediately builds and shows a dialog")
     fun showNow() {
         revue.dialogBuilder = mock {
@@ -68,21 +95,56 @@ internal class RevueTest {
         verify(dialog).show()
     }
 
-    @Test
-    @DisplayName("init sets times launched to 1 when not previously set")
-    fun initTimesLaunchedFirstCall() {
-        revue.init(context)
+    @Nested
+    @DisplayName("when conditions are satisfied")
+    inner class ConditionsSatisfied {
+        @BeforeEach
+        fun setUp() {
+            revue.dialogBuilder = mock {
+                on { build(context) } doReturn dialog
+            }
 
-        storage.getInt(TIMES_LAUNCHED, default = 0) shouldEqual 1
+            revue.init(context)
+            storage.setTestValues(TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED)
+        }
+
+        @Test
+        @DisplayName("request shows a dialog")
+        fun request() {
+            revue.request(context)
+
+            verify(dialog).show()
+        }
+
+        @Test
+        @DisplayName("request returns true")
+        fun requestReturnsTrue() {
+            revue.request(context) shouldBe true
+        }
     }
 
-    @Test
-    @DisplayName("init increments times launched")
-    fun initTimesLaunched() {
-        storage.setTestValues(TIMES_LAUNCHED to 1)
+    @Nested
+    @DisplayName("when conditions are not satisfied")
+    inner class ConditionsUnsatisfied {
+        @BeforeEach
+        fun setUp() {
+            revue.dialogBuilder = mock()
+            revue.init(context)
+            storage.setTestValues(TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED - 1)
+        }
 
-        revue.init(context)
+        @Test
+        @DisplayName("request does not show a dialog")
+        fun request() {
+            revue.request(context)
 
-        storage.getInt(TIMES_LAUNCHED, default = 0) shouldEqual 2
+            verify(revue.dialogBuilder, never()).build(context)
+        }
+
+        @Test
+        @DisplayName("request returns false")
+        fun requestReturnsFalse() {
+            revue.request(context) shouldBe false
+        }
     }
 }

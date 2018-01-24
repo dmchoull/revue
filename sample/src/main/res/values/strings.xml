@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Revue Sample</string>
     <string name="show_now">Show Now</string>
-    <string name="show_maybe">Show Maybe</string>
+    <string name="request">Request</string>
     <string name="simple_dialog">Simple Dialog</string>
     <string name="rating_dialog">Rating Dialog</string>
     <string name="rating_message">Please give us a rating</string>

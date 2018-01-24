@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         revue.showNow(this);
     }
 
-    public void onShowMaybeClick(View view) {
-        Toast.makeText(this, "TODO", Toast.LENGTH_SHORT).show();
+    public void onRequestClick(View view) {
+        revue.request(this);
     }
 }

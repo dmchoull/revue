@@ -30,8 +30,8 @@ import com.github.dmchoull.revue.builder.SimpleDialogBuilder
 import com.github.dmchoull.revue.storage.LocalStorage
 import com.github.dmchoull.revue.storage.SharedPreferencesStorage
 
-const val TIMES_LAUNCHED_KEY = "REVUE_TIMES_LAUNCHED"
-const val DEFAULT_TIMES_LAUNCHED = 3
+internal const val TIMES_LAUNCHED_KEY = "REVUE_TIMES_LAUNCHED"
+internal const val DEFAULT_TIMES_LAUNCHED = 3
 
 class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage()) {
     var dialogBuilder: RevueDialogBuilder = SimpleDialogBuilder()
@@ -58,6 +58,7 @@ class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage())
     }
 
     private fun showDialog(context: Context) {
+        localStorage.setInt(TIMES_LAUNCHED_KEY, 0)
         dialogBuilder.build(context).show()
     }
 }

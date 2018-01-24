@@ -83,16 +83,34 @@ internal class RevueTest {
         storage.getInt(TIMES_LAUNCHED_KEY, default = 0) shouldEqual 2
     }
 
-    @Test
-    @DisplayName("showNow immediately builds and shows a dialog")
-    fun showNow() {
-        revue.dialogBuilder = mock {
-            on { build(context) } doReturn dialog
+    @Nested
+    @DisplayName("showNow")
+    inner class ShowNow {
+        @BeforeEach
+        fun setUp() {
+            revue.dialogBuilder = mock {
+                on { build(context) } doReturn dialog
+            }
+            revue.init(context)
         }
 
-        revue.showNow(context)
+        @Test
+        @DisplayName("immediately builds and shows a dialog")
+        fun showNow() {
+            revue.showNow(context)
 
-        verify(dialog).show()
+            verify(dialog).show()
+        }
+
+        @Test
+        @DisplayName("resets times launched to zero")
+        fun showNowReset() {
+            storage.setTestValues(TIMES_LAUNCHED_KEY to 3)
+
+            revue.showNow(context)
+
+            storage.getInt(TIMES_LAUNCHED_KEY, default = 1) shouldEqual 0
+        }
     }
 
     @Nested
@@ -103,7 +121,6 @@ internal class RevueTest {
             revue.dialogBuilder = mock {
                 on { build(context) } doReturn dialog
             }
-
             revue.init(context)
             storage.setTestValues(TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED)
         }
@@ -120,6 +137,14 @@ internal class RevueTest {
         @DisplayName("request returns true")
         fun requestReturnsTrue() {
             revue.request(context) shouldBe true
+        }
+
+        @Test
+        @DisplayName("request resets times launched to zero")
+        fun requestResets() {
+            revue.request(context)
+
+            storage.getInt(TIMES_LAUNCHED_KEY, default = 1) shouldEqual 0
         }
     }
 
@@ -145,6 +170,15 @@ internal class RevueTest {
         @DisplayName("request returns false")
         fun requestReturnsFalse() {
             revue.request(context) shouldBe false
+        }
+
+
+        @Test
+        @DisplayName("request does not reset times launched to zero")
+        fun requestDoesNotReset() {
+            revue.request(context)
+
+            storage.getInt(TIMES_LAUNCHED_KEY, default = 0) shouldEqual DEFAULT_TIMES_LAUNCHED - 1
         }
     }
 }

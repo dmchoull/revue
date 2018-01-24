@@ -45,11 +45,13 @@ class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage())
     }
 
     fun showNow(context: Context) {
+        reset()
         showDialog(context)
     }
 
     fun request(context: Context): Boolean {
-        if (localStorage.getInt(TIMES_LAUNCHED_KEY, default = 0) >= config.timesLaunched) {
+        if (shouldShow()) {
+            reset()
             showDialog(context)
             return true
         }
@@ -57,8 +59,13 @@ class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage())
         return false
     }
 
-    private fun showDialog(context: Context) {
+    private fun shouldShow() = localStorage.getInt(TIMES_LAUNCHED_KEY, default = 0) >= config.timesLaunched
+
+    private fun reset() {
         localStorage.setInt(TIMES_LAUNCHED_KEY, 0)
+    }
+
+    private fun showDialog(context: Context) {
         dialogBuilder.build(context).show()
     }
 }

@@ -26,6 +26,8 @@ package com.github.dmchoull.revue.builder
 
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.support.annotation.StringRes
 import android.support.v7.app.AlertDialog
 import com.github.dmchoull.revue.R
@@ -112,7 +114,7 @@ class SimpleDialogBuilder(
 
         setDialogTitle(dialogBuilder)
         setDialogMessage(dialogBuilder)
-        setDialogPositiveButton(dialogBuilder)
+        setDialogPositiveButton(dialogBuilder, context)
         setDialogNeutralButton(dialogBuilder)
         setDialogNegativeButton(dialogBuilder)
 
@@ -134,8 +136,8 @@ class SimpleDialogBuilder(
         }
     }
 
-    private fun setDialogPositiveButton(dialogBuilder: AlertDialog.Builder) {
-        val listener = dialogClickListener(positiveButtonListener, this::onPositiveClick)
+    private fun setDialogPositiveButton(dialogBuilder: AlertDialog.Builder, context: Context) {
+        val listener = dialogClickListener(positiveButtonListener, { onPositiveClick(context) })
 
         when (positiveButton) {
             is String -> dialogBuilder.setPositiveButton(positiveButton, listener)
@@ -143,8 +145,16 @@ class SimpleDialogBuilder(
         }
     }
 
-    private fun onPositiveClick() {
+    private fun onPositiveClick(context: Context) {
         callback(DialogResult.POSITIVE)
+        openAppInStore(context)
+    }
+
+    private fun openAppInStore(context: Context) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        val appPackage = context.packageName
+        intent.data = Uri.parse("market://details?id=$appPackage")
+        context.startActivity(intent)
     }
 
     private fun setDialogNeutralButton(dialogBuilder: AlertDialog.Builder) {

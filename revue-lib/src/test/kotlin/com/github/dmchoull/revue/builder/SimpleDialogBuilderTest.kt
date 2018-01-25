@@ -26,6 +26,8 @@ package com.github.dmchoull.revue.builder
 
 import android.app.Activity
 import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import com.nhaarman.mockitokotlin2.mock
@@ -37,6 +39,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowDialog
 
@@ -240,5 +243,18 @@ class SimpleDialogBuilderTest {
         clickDialogButton(button)
 
         return result
+    }
+
+    @Test
+    fun positiveClickOpensStoreDetailsPageForApp() {
+        val dialog = builder.build(activity)
+
+        dialog.show()
+        clickDialogButton(DialogInterface.BUTTON_POSITIVE)
+
+        val shadowActivity = shadowOf(activity)
+        val intent = shadowActivity.peekNextStartedActivity()
+        intent.action shouldEqual Intent.ACTION_VIEW
+        intent.data shouldEqual Uri.parse("market://details?id=com.github.dmchoull.revue")
     }
 }

@@ -25,12 +25,12 @@
 package com.github.dmchoull.revue
 
 import android.content.Context
+import com.github.dmchoull.revue.builder.DialogResult
+import com.github.dmchoull.revue.builder.DialogResultCallback
+import com.github.dmchoull.revue.builder.RevueDialogBuilder
 import com.github.dmchoull.revue.builder.SimpleDialogBuilder
 import com.github.dmchoull.revue.dialog.RevueDialog
-import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.*
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeInstanceOf
 import org.amshove.kluent.shouldEqual
@@ -88,9 +88,7 @@ internal class RevueTest {
     inner class ShowNow {
         @BeforeEach
         fun setUp() {
-            revue.dialogBuilder = mock {
-                on { build(context) } doReturn dialog
-            }
+            revue.dialogBuilder = mockDialogBuilder()
             revue.init(context)
         }
 
@@ -113,14 +111,17 @@ internal class RevueTest {
         }
     }
 
+    private fun mockDialogBuilder() = mock<RevueDialogBuilder> {
+        on { callback(any()) } doReturn it
+        on { build(context) } doReturn dialog
+    }
+
     @Nested
     @DisplayName("when conditions are satisfied")
     inner class ConditionsSatisfied {
         @BeforeEach
         fun setUp() {
-            revue.dialogBuilder = mock {
-                on { build(context) } doReturn dialog
-            }
+            revue.dialogBuilder = mockDialogBuilder()
             revue.init(context)
             storage.setTestValues(TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED)
         }
@@ -153,7 +154,7 @@ internal class RevueTest {
     inner class ConditionsUnsatisfied {
         @BeforeEach
         fun setUp() {
-            revue.dialogBuilder = mock()
+            revue.dialogBuilder = mockDialogBuilder()
             revue.init(context)
             storage.setTestValues(TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED - 1)
         }
@@ -172,13 +173,91 @@ internal class RevueTest {
             revue.request(context) shouldBe false
         }
 
-
         @Test
         @DisplayName("request does not reset times launched to zero")
         fun requestDoesNotReset() {
             revue.request(context)
 
             storage.getInt(TIMES_LAUNCHED_KEY, default = 0) shouldEqual DEFAULT_TIMES_LAUNCHED - 1
+        }
+    }
+
+    @Nested
+    @DisplayName("when dialog result callback is called")
+    inner class Callback {
+        @BeforeEach
+        fun setUp() {
+            revue.dialogBuilder = mockDialogBuilder()
+            revue.init(context)
+        }
+
+        @Test
+        @DisplayName("with a positive result it disables future dialogs")
+        fun positiveResult() {
+            argumentCaptor<DialogResultCallback>().apply {
+                revue.showNow(context)
+
+                verify(revue.dialogBuilder).callback(capture())
+
+                firstValue(DialogResult.POSITIVE)
+
+                storage.getInt(ENABLED_KEY, default = 1) shouldEqual 0
+            }
+        }
+
+        @Test
+        @DisplayName("with a negative result it disables future dialogs")
+        fun negativeResult() {
+            argumentCaptor<DialogResultCallback>().apply {
+                revue.showNow(context)
+
+                verify(revue.dialogBuilder).callback(capture())
+
+                firstValue(DialogResult.NEGATIVE)
+
+                storage.getInt(ENABLED_KEY, default = 1) shouldEqual 0
+            }
+        }
+
+        @Test
+        @DisplayName("with a neutral result it does not disable future dialogs")
+        fun neutralResult() {
+            argumentCaptor<DialogResultCallback>().apply {
+                revue.showNow(context)
+
+                verify(revue.dialogBuilder).callback(capture())
+
+                firstValue(DialogResult.NEUTRAL)
+
+                storage.getInt(ENABLED_KEY, default = 1) shouldEqual 1
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("when dialog is disabled")
+    inner class Disabled {
+        @BeforeEach
+        fun setUp() {
+            revue.dialogBuilder = mockDialogBuilder()
+            revue.init(context)
+            storage.setTestValues(ENABLED_KEY to 0, TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED)
+        }
+
+        @Test
+        @DisplayName("showNow does not show dialog")
+        fun showNow() {
+            revue.showNow(context)
+
+            verify(revue.dialogBuilder, never()).build(context)
+        }
+
+        @Test
+        @DisplayName("request does not show dialog")
+        fun request() {
+            revue.request(context)
+
+            verify(revue.dialogBuilder, never()).build(context)
         }
     }
 }

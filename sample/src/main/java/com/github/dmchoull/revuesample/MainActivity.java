@@ -1,10 +1,13 @@
 package com.github.dmchoull.revuesample;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+
 import com.github.dmchoull.revue.Revue;
 import com.github.dmchoull.revue.builder.RevueDialogBuilder;
 import com.github.dmchoull.revue.builder.SimpleDialogBuilder;
@@ -49,5 +52,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void onRequestClick(View view) {
         revue.request(this);
+    }
+
+    public void onResetClick(View view) {
+        SharedPreferences prefs = getSharedPreferences("REVUE_PREFS", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.clear();
+        editor.apply();
     }
 }

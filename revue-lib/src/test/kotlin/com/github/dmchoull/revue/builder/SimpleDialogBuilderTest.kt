@@ -55,7 +55,7 @@ class SimpleDialogBuilderTest {
         builder = SimpleDialogBuilder()
     }
 
-    // TODO: currently there is no shadow for support AlertDialog, so no good way to test title/message set correctly
+    //TODO: currently there is no shadow for support AlertDialog, so no good way to test title/message set correctly
 
     @Test
     fun buildWithStrings() {
@@ -211,5 +211,34 @@ class SimpleDialogBuilderTest {
         clickDialogButton(DialogInterface.BUTTON_NEGATIVE)
 
         verify(dummy).doSomething()
+    }
+
+    @Test
+    fun callbackIsCalledAfterPositiveButtonClick() {
+        val result = clickWithCallback(DialogInterface.BUTTON_POSITIVE)
+        result shouldEqual DialogResult.POSITIVE
+    }
+
+    @Test
+    fun callbackIsCalledAfterNeutralButtonClick() {
+        val result = clickWithCallback(DialogInterface.BUTTON_NEUTRAL)
+        result shouldEqual DialogResult.NEUTRAL
+    }
+
+    @Test
+    fun callbackIsCalledAfterNegativeButtonClick() {
+        val result = clickWithCallback(DialogInterface.BUTTON_NEGATIVE)
+        result shouldEqual DialogResult.NEGATIVE
+    }
+
+    private fun clickWithCallback(button: Int): DialogResult? {
+        var result: DialogResult? = null
+
+        val dialog = SimpleDialogBuilder(callback = { r -> result = r }).build(activity)
+
+        dialog.show()
+        clickDialogButton(button)
+
+        return result
     }
 }

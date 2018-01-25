@@ -28,5 +28,13 @@ import android.content.Context
 import com.github.dmchoull.revue.dialog.RevueDialog
 
 interface RevueDialogBuilder {
+    fun callback(f: DialogResultCallback): RevueDialogBuilder
+
     fun build(context: Context): RevueDialog
+}
+
+typealias DialogResultCallback = (result: DialogResult) -> Unit
+
+enum class DialogResult {
+    POSITIVE, NEGATIVE, NEUTRAL
 }

@@ -34,6 +34,7 @@ import com.github.dmchoull.revue.dialog.SimpleRevueDialog
 
 @Suppress("MemberVisibilityCanBePrivate")
 class SimpleDialogBuilder(
+        private var callback: DialogResultCallback = {},
         private var title: String? = null,
         private var titleRes: Int = R.string.default_rate_title,
         private var message: String? = null,
@@ -48,6 +49,8 @@ class SimpleDialogBuilder(
         private var negativeButtonRes: Int = R.string.default_negative_btn,
         private var negativeButtonListener: DialogInterface.OnClickListener? = null
 ) : RevueDialogBuilder {
+    override fun callback(f: DialogResultCallback) = apply { callback = f }
+
     fun title(title: String) = apply { this.title = title }
 
     fun title(@StringRes title: Int) = apply { this.titleRes = title }
@@ -141,6 +144,7 @@ class SimpleDialogBuilder(
     }
 
     private fun onPositiveClick() {
+        callback(DialogResult.POSITIVE)
     }
 
     private fun setDialogNeutralButton(dialogBuilder: AlertDialog.Builder) {
@@ -153,6 +157,7 @@ class SimpleDialogBuilder(
     }
 
     private fun onNeutralClick() {
+        callback(DialogResult.NEUTRAL)
     }
 
     private fun setDialogNegativeButton(dialogBuilder: AlertDialog.Builder) {
@@ -165,6 +170,7 @@ class SimpleDialogBuilder(
     }
 
     private fun onNegativeClick() {
+        callback(DialogResult.NEGATIVE)
     }
 }
 

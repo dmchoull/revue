@@ -148,9 +148,29 @@ class SimpleDialogBuilderTest {
     }
 
     @Test
+    fun canSetDismissListener() {
+        val dummy: Dummy = mock()
+
+        val dialog = builder
+                .dismissListener(DialogInterface.OnDismissListener { dummy.doSomething() })
+                .build(activity)
+
+        dialog.show()
+        val alertDialog: AlertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
+        alertDialog.dismiss()
+
+        verify(dummy).doSomething()
+    }
+
+    @Test
     fun buildWithStringsViaConstructor() {
-        val dialog = SimpleDialogBuilder(title = "Title", message = "Message", positiveButton = "OK",
-                neutralButton = "Later", negativeButton = "No Thanks").build(activity)
+        val dialog = SimpleDialogBuilder(
+                title = "Title",
+                message = "Message",
+                positiveButton = "OK",
+                neutralButton = "Later",
+                negativeButton = "No Thanks"
+        ).build(activity)
 
         dialog.show()
 
@@ -212,6 +232,21 @@ class SimpleDialogBuilderTest {
 
         dialog.show()
         clickDialogButton(DialogInterface.BUTTON_NEGATIVE)
+
+        verify(dummy).doSomething()
+    }
+
+    @Test
+    fun canSetDismissListenerViaConstructor() {
+        val dummy: Dummy = mock()
+
+        val dialog = SimpleDialogBuilder(
+                dismissListener = DialogInterface.OnDismissListener { dummy.doSomething() }
+        ).build(activity)
+
+        dialog.show()
+        val alertDialog: AlertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
+        alertDialog.dismiss()
 
         verify(dummy).doSomething()
     }

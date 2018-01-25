@@ -49,7 +49,8 @@ class SimpleDialogBuilder(
         private var neutralButtonListener: DialogInterface.OnClickListener? = null,
         private var negativeButton: String? = null,
         private var negativeButtonRes: Int = R.string.default_negative_btn,
-        private var negativeButtonListener: DialogInterface.OnClickListener? = null
+        private var negativeButtonListener: DialogInterface.OnClickListener? = null,
+        private var dismissListener: DialogInterface.OnDismissListener? = null
 ) : RevueDialogBuilder {
     override fun callback(f: DialogResultCallback) = apply { callback = f }
 
@@ -109,6 +110,8 @@ class SimpleDialogBuilder(
 
     fun negativeButtonListener(listener: DialogInterface.OnClickListener) = apply { negativeButtonListener = listener }
 
+    fun dismissListener(listener: DialogInterface.OnDismissListener) = apply { dismissListener = listener }
+
     override fun build(context: Context): RevueDialog {
         val dialogBuilder = AlertDialog.Builder(context)
 
@@ -117,6 +120,7 @@ class SimpleDialogBuilder(
         setDialogPositiveButton(dialogBuilder, context)
         setDialogNeutralButton(dialogBuilder)
         setDialogNegativeButton(dialogBuilder)
+        setDismissListener(dialogBuilder)
 
         val alertDialog = dialogBuilder.create()
         return SimpleRevueDialog(alertDialog)
@@ -181,6 +185,13 @@ class SimpleDialogBuilder(
 
     private fun onNegativeClick() {
         callback(DialogResult.NEGATIVE)
+    }
+
+    private fun setDismissListener(dialogBuilder: AlertDialog.Builder) {
+        val listener = dismissListener
+        if (listener != null) {
+            dialogBuilder.setOnDismissListener(listener)
+        }
     }
 }
 

@@ -30,6 +30,7 @@ import android.content.Intent
 import android.net.Uri
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import org.amshove.kluent.shouldBe
@@ -115,7 +116,7 @@ class SimpleDialogBuilderTest {
     }
 
     private fun clickDialogButton(button: Int) {
-        val alertDialog: AlertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
+        val alertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
         alertDialog.getButton(button).performClick()
     }
 
@@ -156,7 +157,7 @@ class SimpleDialogBuilderTest {
                 .build(activity)
 
         dialog.show()
-        val alertDialog: AlertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
+        val alertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
         alertDialog.dismiss()
 
         verify(dummy).doSomething()
@@ -245,10 +246,58 @@ class SimpleDialogBuilderTest {
         ).build(activity)
 
         dialog.show()
-        val alertDialog: AlertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
+        val alertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
         alertDialog.dismiss()
 
         verify(dummy).doSomething()
+    }
+
+    @Test
+    fun withoutNegativeButton_removesNegativeButton() {
+        val dialog = builder.withoutNegativeButton().build(activity)
+        dialog.show()
+
+        val alertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
+        val negativeButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+        val neutralButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL)
+        negativeButton.visibility shouldEqual View.GONE
+        neutralButton.visibility shouldEqual View.VISIBLE
+    }
+
+    @Test
+    fun withoutNeutralButton_removesNeutralButton() {
+        val dialog = builder.withoutNeutralButton().build(activity)
+        dialog.show()
+
+        val alertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
+        val negativeButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+        val neutralButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL)
+        negativeButton.visibility shouldEqual View.VISIBLE
+        neutralButton.visibility shouldEqual View.GONE
+    }
+
+    @Test
+    fun withoutNegativeButtonViaConstructor() {
+        val dialog = SimpleDialogBuilder(withoutNegativeButton = true).build(activity)
+        dialog.show()
+
+        val alertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
+        val negativeButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+        val neutralButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL)
+        negativeButton.visibility shouldEqual View.GONE
+        neutralButton.visibility shouldEqual View.VISIBLE
+    }
+
+    @Test
+    fun withoutNeutralButtonViaConstructor() {
+        val dialog = SimpleDialogBuilder(withoutNeutralButton = true).build(activity)
+        dialog.show()
+
+        val alertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
+        val negativeButton = alertDialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+        val neutralButton = alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL)
+        negativeButton.visibility shouldEqual View.VISIBLE
+        neutralButton.visibility shouldEqual View.GONE
     }
 
     @Test

@@ -68,9 +68,7 @@ class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage())
 
     private fun conditionMet() = localStorage.getInt(TIMES_LAUNCHED_KEY, default = 0) >= config.timesLaunched
 
-    private fun reset() {
-        localStorage.setInt(TIMES_LAUNCHED_KEY, 0)
-    }
+    private fun reset() = localStorage.setInt(TIMES_LAUNCHED_KEY, 0)
 
     private fun showDialog(context: Context) {
         dialogBuilder
@@ -83,9 +81,7 @@ class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage())
                 .show()
     }
 
-    private fun setDisabled() {
-        localStorage.setInt(ENABLED_KEY, 0)
-    }
+    private fun setDisabled() = localStorage.setInt(ENABLED_KEY, 0)
 }
 
 data class RevueConfig(val timesLaunched: Int = DEFAULT_TIMES_LAUNCHED)

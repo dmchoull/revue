@@ -39,11 +39,17 @@ class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage())
     var dialogBuilder: RevueDialogBuilder = SimpleDialogBuilder()
     var config = RevueConfig()
 
+    private var initialized = false
+
     fun init(context: Context) {
+        if (initialized) throw RevueAlreadyInitializedException()
+
         localStorage.init(context)
 
         val timesLaunched = localStorage.getInt(TIMES_LAUNCHED_KEY, default = 0)
         localStorage.setInt(TIMES_LAUNCHED_KEY, timesLaunched + 1)
+
+        initialized = true
     }
 
     fun showNow(context: Context) {
@@ -85,3 +91,5 @@ class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage())
 }
 
 data class RevueConfig(val timesLaunched: Int = DEFAULT_TIMES_LAUNCHED)
+
+class RevueAlreadyInitializedException : RuntimeException("This instance of Revue has already been initialized. You should only call init once, when your app is launched.")

@@ -34,6 +34,7 @@ import com.nhaarman.mockitokotlin2.*
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeInstanceOf
 import org.amshove.kluent.shouldEqual
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -81,6 +82,16 @@ internal class RevueTest {
         revue.init(context)
 
         storage.getInt(TIMES_LAUNCHED_KEY, default = 0) shouldEqual 2
+    }
+
+    @Test
+    @DisplayName("init throws an exception if called twice on the same instance")
+    fun initThrowsOnSecondCall() {
+        revue.init(context)
+
+        assertThrows(RevueAlreadyInitializedException::class.java) {
+            revue.init(context)
+        }
     }
 
     @Nested

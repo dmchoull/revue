@@ -33,6 +33,7 @@ import android.support.v7.app.AlertDialog
 import com.github.dmchoull.revue.R
 import com.github.dmchoull.revue.dialog.RevueDialog
 import com.github.dmchoull.revue.dialog.SimpleRevueDialog
+import java.lang.ref.WeakReference
 
 @Suppress("MemberVisibilityCanBePrivate")
 class SimpleDialogBuilder(
@@ -43,17 +44,26 @@ class SimpleDialogBuilder(
         private var messageRes: Int = R.string.default_rate_message,
         private var positiveButton: String? = null,
         private var positiveButtonRes: Int = R.string.default_positive_btn,
-        private var positiveButtonListener: DialogInterface.OnClickListener? = null,
+        positiveButtonListener: DialogInterface.OnClickListener? = null,
         private var neutralButton: String? = null,
         private var neutralButtonRes: Int = R.string.default_neutral_btn,
-        private var neutralButtonListener: DialogInterface.OnClickListener? = null,
+        neutralButtonListener: DialogInterface.OnClickListener? = null,
         private var negativeButton: String? = null,
         private var negativeButtonRes: Int = R.string.default_negative_btn,
-        private var negativeButtonListener: DialogInterface.OnClickListener? = null,
+        negativeButtonListener: DialogInterface.OnClickListener? = null,
         private var dismissListener: DialogInterface.OnDismissListener? = null,
         private var withoutNegativeButton: Boolean = false,
         private var withoutNeutralButton: Boolean = false
 ) : RevueDialogBuilder {
+    private var _positiveButtonListener: WeakReference<DialogInterface.OnClickListener?> =
+            WeakReference(positiveButtonListener)
+
+    private var _neutralButtonListener: WeakReference<DialogInterface.OnClickListener?> =
+            WeakReference(neutralButtonListener)
+
+    private var _negativeButtonListener: WeakReference<DialogInterface.OnClickListener?> =
+            WeakReference(negativeButtonListener)
+
     override fun callback(f: DialogResultCallback) = apply { callback = f }
 
     fun title(title: String) = apply { this.title = title }
@@ -68,49 +78,52 @@ class SimpleDialogBuilder(
     fun positiveButton(positiveButton: String, listener: DialogInterface.OnClickListener? = null) =
             apply {
                 this.positiveButton = positiveButton
-                this.positiveButtonListener = listener
+                _positiveButtonListener = WeakReference(listener)
             }
 
     @JvmOverloads
     fun positiveButton(@StringRes positiveButton: Int, listener: DialogInterface.OnClickListener? = null) =
             apply {
                 this.positiveButtonRes = positiveButton
-                this.positiveButtonListener = listener
+                _positiveButtonListener = WeakReference(listener)
             }
 
-    fun positiveButtonListener(listener: DialogInterface.OnClickListener) = apply { positiveButtonListener = listener }
+    fun positiveButtonListener(listener: DialogInterface.OnClickListener) =
+            apply { _positiveButtonListener = WeakReference(listener) }
 
     @JvmOverloads
     fun neutralButton(neutralButton: String, listener: DialogInterface.OnClickListener? = null) =
             apply {
                 this.neutralButton = neutralButton
-                this.neutralButtonListener = listener
+                _neutralButtonListener = WeakReference(listener)
             }
 
     @JvmOverloads
     fun neutralButton(@StringRes neutralButton: Int, listener: DialogInterface.OnClickListener? = null) =
             apply {
                 this.neutralButtonRes = neutralButton
-                this.neutralButtonListener = listener
+                _neutralButtonListener = WeakReference(listener)
             }
 
-    fun neutralButtonListener(listener: DialogInterface.OnClickListener) = apply { neutralButtonListener = listener }
+    fun neutralButtonListener(listener: DialogInterface.OnClickListener) =
+            apply { _neutralButtonListener = WeakReference(listener) }
 
     @JvmOverloads
     fun negativeButton(negativeButton: String, listener: DialogInterface.OnClickListener? = null) =
             apply {
                 this.negativeButton = negativeButton
-                this.negativeButtonListener = listener
+                _negativeButtonListener = WeakReference(listener)
             }
 
     @JvmOverloads
     fun negativeButton(@StringRes negativeButton: Int, listener: DialogInterface.OnClickListener? = null) =
             apply {
                 this.negativeButtonRes = negativeButton
-                this.negativeButtonListener = listener
+                _negativeButtonListener = WeakReference(listener)
             }
 
-    fun negativeButtonListener(listener: DialogInterface.OnClickListener) = apply { negativeButtonListener = listener }
+    fun negativeButtonListener(listener: DialogInterface.OnClickListener) =
+            apply { _negativeButtonListener = WeakReference(listener) }
 
     fun dismissListener(listener: DialogInterface.OnDismissListener) = apply { dismissListener = listener }
 
@@ -147,7 +160,7 @@ class SimpleDialogBuilder(
     }
 
     private fun setDialogPositiveButton(dialogBuilder: AlertDialog.Builder, context: Context) {
-        val listener = dialogClickListener(positiveButtonListener, { onPositiveClick(context) })
+        val listener = dialogClickListener(_positiveButtonListener.get(), { onPositiveClick(context) })
 
         when (positiveButton) {
             is String -> dialogBuilder.setPositiveButton(positiveButton, listener)
@@ -170,7 +183,7 @@ class SimpleDialogBuilder(
     private fun setDialogNeutralButton(dialogBuilder: AlertDialog.Builder) {
         if (withoutNeutralButton) return
 
-        val listener = dialogClickListener(neutralButtonListener, this::onNeutralClick)
+        val listener = dialogClickListener(_neutralButtonListener.get(), this::onNeutralClick)
 
         when (neutralButton) {
             is String -> dialogBuilder.setNeutralButton(neutralButton, listener)
@@ -185,7 +198,7 @@ class SimpleDialogBuilder(
     private fun setDialogNegativeButton(dialogBuilder: AlertDialog.Builder) {
         if (withoutNegativeButton) return
 
-        val listener = dialogClickListener(negativeButtonListener, this::onNegativeClick)
+        val listener = dialogClickListener(_negativeButtonListener.get(), this::onNegativeClick)
 
         when (negativeButton) {
             is String -> dialogBuilder.setNegativeButton(negativeButton, listener)

@@ -41,6 +41,12 @@ class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage())
 
     private var initialized = false
 
+    /**
+     * Initializes Revue by updating tracked data for your app. This should typically be called in
+     * your Application onCreate method, and should not be called more than once.
+     *
+     * Once initialized, this instance must be reused throughout your application.
+     */
     fun init(context: Context) {
         if (initialized) throw RevueAlreadyInitializedException()
 
@@ -52,12 +58,20 @@ class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage())
         initialized = true
     }
 
+    /**
+     * Shows the dialog immediately even if the conditions have not been met. Will not display if
+     * the user has already given a negative or positive response.
+     */
     fun showNow(context: Context) {
         if (isDisabled()) return
         reset()
         showDialog(context)
     }
 
+    /**
+     * Requests the dialog to be shown if the conditions have been met. Will not display if the user
+     * has already given a negative or positive response.
+     */
     fun request(context: Context): Boolean {
         if (shouldShow()) {
             reset()

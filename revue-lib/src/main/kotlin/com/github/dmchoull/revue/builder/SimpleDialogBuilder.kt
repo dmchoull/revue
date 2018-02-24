@@ -51,18 +51,14 @@ class SimpleDialogBuilder(
         private var negativeButton: String? = null,
         private var negativeButtonRes: Int = R.string.default_negative_btn,
         negativeButtonListener: DialogInterface.OnClickListener? = null,
-        private var dismissListener: DialogInterface.OnDismissListener? = null,
+        dismissListener: DialogInterface.OnDismissListener? = null,
         private var withoutNegativeButton: Boolean = false,
         private var withoutNeutralButton: Boolean = false
 ) : RevueDialogBuilder {
-    private var _positiveButtonListener: WeakReference<DialogInterface.OnClickListener?> =
-            WeakReference(positiveButtonListener)
-
-    private var _neutralButtonListener: WeakReference<DialogInterface.OnClickListener?> =
-            WeakReference(neutralButtonListener)
-
-    private var _negativeButtonListener: WeakReference<DialogInterface.OnClickListener?> =
-            WeakReference(negativeButtonListener)
+    private var _positiveButtonListener = WeakReference(positiveButtonListener)
+    private var _neutralButtonListener = WeakReference(neutralButtonListener)
+    private var _negativeButtonListener = WeakReference(negativeButtonListener)
+    private var _dismissListener = WeakReference(dismissListener)
 
     override fun callback(f: DialogResultCallback) = apply { callback = f }
 
@@ -125,7 +121,8 @@ class SimpleDialogBuilder(
     fun negativeButtonListener(listener: DialogInterface.OnClickListener) =
             apply { _negativeButtonListener = WeakReference(listener) }
 
-    fun dismissListener(listener: DialogInterface.OnDismissListener) = apply { dismissListener = listener }
+    fun dismissListener(listener: DialogInterface.OnDismissListener) =
+            apply { _dismissListener = WeakReference(listener) }
 
     fun withoutNegativeButton() = apply { this.withoutNegativeButton = true }
 
@@ -211,7 +208,7 @@ class SimpleDialogBuilder(
     }
 
     private fun setDismissListener(dialogBuilder: AlertDialog.Builder) {
-        val listener = dismissListener
+        val listener = _dismissListener.get()
         if (listener != null) {
             dialogBuilder.setOnDismissListener(listener)
         }

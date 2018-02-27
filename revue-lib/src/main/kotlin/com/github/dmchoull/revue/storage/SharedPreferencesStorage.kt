@@ -57,10 +57,6 @@ class SharedPreferencesStorage : LocalStorage {
     override fun getString(key: String, default: String): String =
             getPrefs().getString(key, default)
 
-    private fun getPrefs() =
-            preferences ?: throw IllegalStateException("""
-                |This instance of Revue has not been properly initialized. Make sure you:
-                | (a) call Revue::init when your app is launched
-                | (b) reuse the same instance throughout the lifecycle of your app
-                """.trimMargin())
+    private fun getPrefs() = preferences
+            ?: throw IllegalStateException("This instance of Revue has not been properly initialized. Make sure you call Revue::init when your app is launched")
 }

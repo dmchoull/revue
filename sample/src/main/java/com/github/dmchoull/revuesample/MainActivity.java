@@ -15,14 +15,12 @@ import com.github.dmchoull.revue.builder.RevueDialogBuilder;
 
 public class MainActivity extends AppCompatActivity {
     // usually would be provided via dependency injection with configuration already done
-    private Revue revue;
+    private Revue revue = Revue.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        revue = ((SampleApplication) getApplication()).getRevue();
 
         RadioGroup radioDialogType = findViewById(R.id.radioDialogType);
         radioDialogType.setOnCheckedChangeListener((group, checkedId) -> setDialogBuilder(checkedId));

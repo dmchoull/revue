@@ -60,6 +60,13 @@ internal class RevueTest {
     }
 
     @Test
+    @DisplayName("getInstance returns a singleton instance")
+    fun getInstance() {
+        Revue.instance shouldBeInstanceOf Revue::class
+        Revue.instance shouldBe Revue.instance
+    }
+
+    @Test
     @DisplayName("uses SimpleDialogBuilder by default")
     fun defaultSimpleDialogBuilder() {
         revue.reviewPromptDialogBuilder shouldBeInstanceOf SimpleDialogBuilder::class

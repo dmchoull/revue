@@ -39,13 +39,18 @@ internal const val TIMES_LAUNCHED_KEY = "REVUE_TIMES_LAUNCHED"
 internal const val ENABLED_KEY = "REVUE_ENABLED"
 internal const val DEFAULT_TIMES_LAUNCHED = 3
 
-class Revue(private val localStorage: LocalStorage = SharedPreferencesStorage(),
-            private val storeService: StoreService = PlayStoreService()) {
+class Revue internal constructor(private val localStorage: LocalStorage = SharedPreferencesStorage(),
+                                 private val storeService: StoreService = PlayStoreService()) {
     var config = RevueConfig()
     var prePromptDialogBuilder: RevueDialogBuilder? = PrePromptDialogBuilder()
     var reviewPromptDialogBuilder: RevueDialogBuilder = ReviewPromptDialogBuilder()
 
     private var initialized = false
+
+    companion object {
+        @JvmStatic
+        val instance: Revue by lazy { Revue() }
+    }
 
     /**
      * Initializes Revue by updating tracked data for your app. This should typically be called in

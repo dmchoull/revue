@@ -7,11 +7,7 @@ import com.github.dmchoull.revue.RevueConfig;
 import com.squareup.leakcanary.LeakCanary;
 
 public class SampleApplication extends Application {
-    private final Revue revue = new Revue();
-
-    public Revue getRevue() {
-        return revue;
-    }
+    private final Revue revue = Revue.getInstance();
 
     @Override
     public void onCreate() {

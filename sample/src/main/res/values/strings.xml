@@ -4,7 +4,7 @@
     <string name="request">Request</string>
     <string name="simple_dialog">Simple Dialog</string>
     <string name="rating_dialog">Rating Dialog</string>
-    <string name="rating_message">Please give us a rating</string>
+    <string name="rating_message">Would you mind giving us a rating?</string>
     <string name="memory_leak_test">Memory Leak Test</string>
     <string name="reset">Reset</string>
     <string name="go_back">Go Back</string>

@@ -10,8 +10,8 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.github.dmchoull.revue.Revue;
+import com.github.dmchoull.revue.builder.ReviewPromptDialogBuilder;
 import com.github.dmchoull.revue.builder.RevueDialogBuilder;
-import com.github.dmchoull.revue.builder.SimpleDialogBuilder;
 
 public class MainActivity extends AppCompatActivity {
     // usually would be provided via dependency injection with configuration already done
@@ -33,15 +33,15 @@ public class MainActivity extends AppCompatActivity {
         RevueDialogBuilder builder;
 
         if (checkedId == R.id.radioSimple) {
-            builder = new SimpleDialogBuilder()
-                    .title("Enjoy using this app?")
+            builder = new ReviewPromptDialogBuilder()
+                    .title("Thank you!")
                     .message(R.string.rating_message)
                     .negativeButtonListener(
                             (dialog, which) ->
                                     Toast.makeText(this, "Thanks Anyway", Toast.LENGTH_SHORT).show()
                     );
 
-            revue.setDialogBuilder(builder);
+            revue.setReviewPromptDialogBuilder(builder);
         } else {
             Toast.makeText(this, "TODO", Toast.LENGTH_SHORT).show();
         }

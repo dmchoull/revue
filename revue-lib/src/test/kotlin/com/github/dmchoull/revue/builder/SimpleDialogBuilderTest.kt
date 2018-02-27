@@ -26,11 +26,11 @@ package com.github.dmchoull.revue.builder
 
 import android.app.Activity
 import android.content.DialogInterface
-import android.content.Intent
-import android.net.Uri
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import org.amshove.kluent.shouldBe
@@ -40,16 +40,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.Shadows.shadowOf
 import org.robolectric.shadows.ShadowAlertDialog
 import org.robolectric.shadows.ShadowDialog
 
 @RunWith(RobolectricTestRunner::class)
 class SimpleDialogBuilderTest {
-    private interface Dummy {
-        fun doSomething()
-    }
-
     private lateinit var activity: Activity
     private lateinit var builder: SimpleDialogBuilder
 
@@ -103,16 +98,15 @@ class SimpleDialogBuilderTest {
 
     @Test
     fun canSetPositiveButtonClickListener() {
-        val dummy: Dummy = mock()
-
+        val listener: DialogInterface.OnClickListener = mock()
         val dialog = builder
-                .positiveButtonListener(DialogInterface.OnClickListener { _, _ -> dummy.doSomething() })
+                .positiveButtonListener(listener)
                 .build(activity)
 
         dialog.show()
         clickDialogButton(DialogInterface.BUTTON_POSITIVE)
 
-        verify(dummy).doSomething()
+        verify(listener).onClick(any(), eq(DialogInterface.BUTTON_POSITIVE))
     }
 
     private fun clickDialogButton(button: Int) {
@@ -122,45 +116,42 @@ class SimpleDialogBuilderTest {
 
     @Test
     fun canSetNeutralButtonClickListener() {
-        val dummy: Dummy = mock()
-
+        val listener: DialogInterface.OnClickListener = mock()
         val dialog = builder
-                .neutralButtonListener(DialogInterface.OnClickListener { _, _ -> dummy.doSomething() })
+                .neutralButtonListener(listener)
                 .build(activity)
 
         dialog.show()
         clickDialogButton(DialogInterface.BUTTON_NEUTRAL)
 
-        verify(dummy).doSomething()
+        verify(listener).onClick(any(), eq(DialogInterface.BUTTON_NEUTRAL))
     }
 
     @Test
     fun canSetNegativeButtonClickListener() {
-        val dummy: Dummy = mock()
-
+        val listener: DialogInterface.OnClickListener = mock()
         val dialog = builder
-                .negativeButtonListener(DialogInterface.OnClickListener { _, _ -> dummy.doSomething() })
+                .negativeButtonListener(listener)
                 .build(activity)
 
         dialog.show()
         clickDialogButton(DialogInterface.BUTTON_NEGATIVE)
 
-        verify(dummy).doSomething()
+        verify(listener).onClick(any(), eq(DialogInterface.BUTTON_NEGATIVE))
     }
 
     @Test
     fun canSetDismissListener() {
-        val dummy: Dummy = mock()
-
+        val listener: DialogInterface.OnDismissListener = mock()
         val dialog = builder
-                .dismissListener(DialogInterface.OnDismissListener { dummy.doSomething() })
+                .dismissListener(listener)
                 .build(activity)
 
         dialog.show()
         val alertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
         alertDialog.dismiss()
 
-        verify(dummy).doSomething()
+        verify(listener).onDismiss(any())
     }
 
     @Test
@@ -197,59 +188,47 @@ class SimpleDialogBuilderTest {
 
     @Test
     fun canSetPositiveButtonClickListenerViaConstructor() {
-        val dummy: Dummy = mock()
-
-        val dialog = SimpleDialogBuilder(
-                positiveButtonListener = DialogInterface.OnClickListener { _, _ -> dummy.doSomething() }
-        ).build(activity)
+        val listener: DialogInterface.OnClickListener = mock()
+        val dialog = SimpleDialogBuilder(positiveButtonListener = listener).build(activity)
 
         dialog.show()
         clickDialogButton(DialogInterface.BUTTON_POSITIVE)
 
-        verify(dummy).doSomething()
+        verify(listener).onClick(any(), eq(DialogInterface.BUTTON_POSITIVE))
     }
 
     @Test
     fun canSetNeutralButtonClickListenerViaConstructor() {
-        val dummy: Dummy = mock()
-
-        val dialog = SimpleDialogBuilder(
-                neutralButtonListener = DialogInterface.OnClickListener { _, _ -> dummy.doSomething() }
-        ).build(activity)
+        val listener: DialogInterface.OnClickListener = mock()
+        val dialog = SimpleDialogBuilder(neutralButtonListener = listener).build(activity)
 
         dialog.show()
         clickDialogButton(DialogInterface.BUTTON_NEUTRAL)
 
-        verify(dummy).doSomething()
+        verify(listener).onClick(any(), eq(DialogInterface.BUTTON_NEUTRAL))
     }
 
     @Test
     fun canSetNegativeButtonClickListenerViaConstructor() {
-        val dummy: Dummy = mock()
-
-        val dialog = SimpleDialogBuilder(
-                negativeButtonListener = DialogInterface.OnClickListener { _, _ -> dummy.doSomething() }
-        ).build(activity)
+        val listener: DialogInterface.OnClickListener = mock()
+        val dialog = SimpleDialogBuilder(negativeButtonListener = listener).build(activity)
 
         dialog.show()
         clickDialogButton(DialogInterface.BUTTON_NEGATIVE)
 
-        verify(dummy).doSomething()
+        verify(listener).onClick(any(), eq(DialogInterface.BUTTON_NEGATIVE))
     }
 
     @Test
     fun canSetDismissListenerViaConstructor() {
-        val dummy: Dummy = mock()
-
-        val dialog = SimpleDialogBuilder(
-                dismissListener = DialogInterface.OnDismissListener { dummy.doSomething() }
-        ).build(activity)
+        val listener: DialogInterface.OnDismissListener = mock()
+        val dialog = SimpleDialogBuilder(dismissListener = listener).build(activity)
 
         dialog.show()
         val alertDialog = ShadowAlertDialog.getLatestDialog() as AlertDialog
         alertDialog.dismiss()
 
-        verify(dummy).doSomething()
+        verify(listener).onDismiss(any())
     }
 
     @Test
@@ -327,18 +306,5 @@ class SimpleDialogBuilderTest {
         clickDialogButton(button)
 
         return result
-    }
-
-    @Test
-    fun positiveClickOpensStoreDetailsPageForApp() {
-        val dialog = builder.build(activity)
-
-        dialog.show()
-        clickDialogButton(DialogInterface.BUTTON_POSITIVE)
-
-        val shadowActivity = shadowOf(activity)
-        val intent = shadowActivity.peekNextStartedActivity()
-        intent.action shouldEqual Intent.ACTION_VIEW
-        intent.data shouldEqual Uri.parse("market://details?id=com.github.dmchoull.revue")
     }
 }

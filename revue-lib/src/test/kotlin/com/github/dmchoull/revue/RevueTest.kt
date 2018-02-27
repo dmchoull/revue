@@ -30,6 +30,7 @@ import com.github.dmchoull.revue.builder.DialogResultCallback
 import com.github.dmchoull.revue.builder.RevueDialogBuilder
 import com.github.dmchoull.revue.builder.SimpleDialogBuilder
 import com.github.dmchoull.revue.dialog.RevueDialog
+import com.github.dmchoull.revue.util.StoreService
 import com.nhaarman.mockitokotlin2.*
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeInstanceOf
@@ -42,22 +43,26 @@ import org.junit.jupiter.api.Test
 
 internal class RevueTest {
     private lateinit var context: Context
-    private lateinit var dialog: RevueDialog
+    private lateinit var reviewDialog: RevueDialog
     private lateinit var revue: Revue
     private lateinit var storage: InMemoryStorage
+    private lateinit var storeService: StoreService
 
     @BeforeEach
     fun setUp() {
         context = mock()
-        dialog = mock()
+        reviewDialog = mock()
         storage = InMemoryStorage()
-        revue = Revue(localStorage = storage)
+        storeService = mock()
+
+        revue = Revue(storage, storeService)
+        revue.prePromptDialogBuilder = null
     }
 
     @Test
     @DisplayName("uses SimpleDialogBuilder by default")
     fun defaultSimpleDialogBuilder() {
-        revue.dialogBuilder shouldBeInstanceOf SimpleDialogBuilder::class
+        revue.reviewPromptDialogBuilder shouldBeInstanceOf SimpleDialogBuilder::class
     }
 
     @Test
@@ -99,30 +104,90 @@ internal class RevueTest {
     inner class ShowNow {
         @BeforeEach
         fun setUp() {
-            revue.dialogBuilder = mockDialogBuilder()
+            revue.reviewPromptDialogBuilder = mockDialogBuilder()
             revue.init(context)
         }
 
-        @Test
-        @DisplayName("immediately builds and shows a dialog")
-        fun showNow() {
-            revue.showNow(context)
+        @Nested
+        @DisplayName("with pre-review prompt dialog")
+        inner class WithPrePrompt {
+            private lateinit var preReviewDialog: RevueDialog
 
-            verify(dialog).show()
+            @BeforeEach
+            fun setUp() {
+                preReviewDialog = mock()
+                revue.prePromptDialogBuilder = mockDialogBuilder(preReviewDialog)
+            }
+
+            @Test
+            @DisplayName("shows review prompt dialog if user clicks positive button")
+            fun afterPositive() {
+                revue.showNow(context)
+
+                argumentCaptor<DialogResultCallback>().apply {
+                    verify(revue.prePromptDialogBuilder)!!.callback(capture())
+                    verify(preReviewDialog).show()
+
+                    firstValue.invoke(DialogResult.POSITIVE)
+
+                    verify(reviewDialog).show()
+                }
+            }
+
+            @Test
+            @DisplayName("does not show review prompt dialog if user clicks negative button")
+            fun afterNegative() {
+                revue.showNow(context)
+
+                argumentCaptor<DialogResultCallback>().apply {
+                    verify(revue.prePromptDialogBuilder)!!.callback(capture())
+                    verify(preReviewDialog).show()
+
+                    firstValue.invoke(DialogResult.NEGATIVE)
+
+                    verify(reviewDialog, never()).show()
+                }
+            }
+
+            @Test
+            @DisplayName("resets times launched to zero")
+            fun showNowReset() {
+                storage.setTestValues(TIMES_LAUNCHED_KEY to 3)
+
+                revue.showNow(context)
+
+                storage.getInt(TIMES_LAUNCHED_KEY, default = 1) shouldEqual 0
+            }
         }
 
-        @Test
-        @DisplayName("resets times launched to zero")
-        fun showNowReset() {
-            storage.setTestValues(TIMES_LAUNCHED_KEY to 3)
+        @Nested
+        @DisplayName("without pre-review prompt dialog")
+        inner class WithoutPrePrompt {
+            @BeforeEach
+            fun setUp() {
+                revue.prePromptDialogBuilder = null
+            }
 
-            revue.showNow(context)
+            @Test
+            @DisplayName("shows review prompt dialog immediately")
+            fun afterPositive() {
+                revue.showNow(context)
+                verify(reviewDialog).show()
+            }
 
-            storage.getInt(TIMES_LAUNCHED_KEY, default = 1) shouldEqual 0
+            @Test
+            @DisplayName("resets times launched to zero")
+            fun showNowReset() {
+                storage.setTestValues(TIMES_LAUNCHED_KEY to 3)
+
+                revue.showNow(context)
+
+                storage.getInt(TIMES_LAUNCHED_KEY, default = 1) shouldEqual 0
+            }
         }
     }
 
-    private fun mockDialogBuilder() = mock<RevueDialogBuilder> {
+    private fun mockDialogBuilder(dialog: RevueDialog = reviewDialog) = mock<RevueDialogBuilder> {
         on { callback(any()) } doReturn it
         on { build(context) } doReturn dialog
     }
@@ -132,7 +197,7 @@ internal class RevueTest {
     inner class ConditionsSatisfied {
         @BeforeEach
         fun setUp() {
-            revue.dialogBuilder = mockDialogBuilder()
+            revue.reviewPromptDialogBuilder = mockDialogBuilder()
             revue.init(context)
             storage.setTestValues(TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED)
         }
@@ -142,7 +207,7 @@ internal class RevueTest {
         fun request() {
             revue.request(context)
 
-            verify(dialog).show()
+            verify(reviewDialog).show()
         }
 
         @Test
@@ -165,7 +230,7 @@ internal class RevueTest {
     inner class ConditionsUnsatisfied {
         @BeforeEach
         fun setUp() {
-            revue.dialogBuilder = mockDialogBuilder()
+            revue.reviewPromptDialogBuilder = mockDialogBuilder()
             revue.init(context)
             storage.setTestValues(TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED - 1)
         }
@@ -175,7 +240,7 @@ internal class RevueTest {
         fun request() {
             revue.request(context)
 
-            verify(revue.dialogBuilder, never()).build(context)
+            verify(revue.reviewPromptDialogBuilder, never()).build(context)
         }
 
         @Test
@@ -198,21 +263,35 @@ internal class RevueTest {
     inner class Callback {
         @BeforeEach
         fun setUp() {
-            revue.dialogBuilder = mockDialogBuilder()
+            revue.reviewPromptDialogBuilder = mockDialogBuilder()
             revue.init(context)
         }
 
         @Test
         @DisplayName("with a positive result it disables future dialogs")
-        fun positiveResult() {
+        fun positiveResultDisables() {
             argumentCaptor<DialogResultCallback>().apply {
                 revue.showNow(context)
 
-                verify(revue.dialogBuilder).callback(capture())
+                verify(revue.reviewPromptDialogBuilder).callback(capture())
 
                 firstValue(DialogResult.POSITIVE)
 
                 storage.getInt(ENABLED_KEY, default = 1) shouldEqual 0
+            }
+        }
+
+        @Test
+        @DisplayName("with a positive result it opens the store page for the app")
+        fun positiveResultOpensStore() {
+            argumentCaptor<DialogResultCallback>().apply {
+                revue.showNow(context)
+
+                verify(revue.reviewPromptDialogBuilder).callback(capture())
+
+                firstValue(DialogResult.POSITIVE)
+
+                storeService.openAppInStore(context)
             }
         }
 
@@ -222,7 +301,7 @@ internal class RevueTest {
             argumentCaptor<DialogResultCallback>().apply {
                 revue.showNow(context)
 
-                verify(revue.dialogBuilder).callback(capture())
+                verify(revue.reviewPromptDialogBuilder).callback(capture())
 
                 firstValue(DialogResult.NEGATIVE)
 
@@ -236,7 +315,7 @@ internal class RevueTest {
             argumentCaptor<DialogResultCallback>().apply {
                 revue.showNow(context)
 
-                verify(revue.dialogBuilder).callback(capture())
+                verify(revue.reviewPromptDialogBuilder).callback(capture())
 
                 firstValue(DialogResult.NEUTRAL)
 
@@ -250,7 +329,7 @@ internal class RevueTest {
     inner class Disabled {
         @BeforeEach
         fun setUp() {
-            revue.dialogBuilder = mockDialogBuilder()
+            revue.reviewPromptDialogBuilder = mockDialogBuilder()
             revue.init(context)
             storage.setTestValues(ENABLED_KEY to 0, TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED)
         }
@@ -260,7 +339,7 @@ internal class RevueTest {
         fun showNow() {
             revue.showNow(context)
 
-            verify(revue.dialogBuilder, never()).build(context)
+            verify(revue.reviewPromptDialogBuilder, never()).build(context)
         }
 
         @Test
@@ -268,7 +347,7 @@ internal class RevueTest {
         fun request() {
             revue.request(context)
 
-            verify(revue.dialogBuilder, never()).build(context)
+            verify(revue.reviewPromptDialogBuilder, never()).build(context)
         }
     }
 }

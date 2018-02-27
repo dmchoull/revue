@@ -26,8 +26,6 @@ package com.github.dmchoull.revue.builder
 
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
-import android.net.Uri
 import android.support.annotation.StringRes
 import android.support.v7.app.AlertDialog
 import com.github.dmchoull.revue.R
@@ -36,7 +34,7 @@ import com.github.dmchoull.revue.dialog.SimpleRevueDialog
 import java.lang.ref.WeakReference
 
 @Suppress("MemberVisibilityCanBePrivate")
-class SimpleDialogBuilder(
+open class SimpleDialogBuilder(
         private var callback: DialogResultCallback = {},
         private var title: String? = null,
         private var titleRes: Int = R.string.default_rate_title,
@@ -133,7 +131,7 @@ class SimpleDialogBuilder(
 
         setDialogTitle(dialogBuilder)
         setDialogMessage(dialogBuilder)
-        setDialogPositiveButton(dialogBuilder, context)
+        setDialogPositiveButton(dialogBuilder)
         setDialogNeutralButton(dialogBuilder)
         setDialogNegativeButton(dialogBuilder)
         setDismissListener(dialogBuilder)
@@ -156,8 +154,8 @@ class SimpleDialogBuilder(
         }
     }
 
-    private fun setDialogPositiveButton(dialogBuilder: AlertDialog.Builder, context: Context) {
-        val listener = dialogClickListener(_positiveButtonListener.get(), { onPositiveClick(context) })
+    private fun setDialogPositiveButton(dialogBuilder: AlertDialog.Builder) {
+        val listener = dialogClickListener(_positiveButtonListener.get(), this::onPositiveClick)
 
         when (positiveButton) {
             is String -> dialogBuilder.setPositiveButton(positiveButton, listener)
@@ -165,16 +163,8 @@ class SimpleDialogBuilder(
         }
     }
 
-    private fun onPositiveClick(context: Context) {
+    private fun onPositiveClick() {
         callback(DialogResult.POSITIVE)
-        openAppInStore(context)
-    }
-
-    private fun openAppInStore(context: Context) {
-        val intent = Intent(Intent.ACTION_VIEW)
-        val appPackage = context.packageName
-        intent.data = Uri.parse("market://details?id=$appPackage")
-        context.startActivity(intent)
     }
 
     private fun setDialogNeutralButton(dialogBuilder: AlertDialog.Builder) {

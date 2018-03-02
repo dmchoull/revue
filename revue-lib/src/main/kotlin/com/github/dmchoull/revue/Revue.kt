@@ -24,6 +24,7 @@
 
 package com.github.dmchoull.revue
 
+import android.app.Application
 import android.content.Context
 import com.github.dmchoull.revue.builder.DialogResult
 import com.github.dmchoull.revue.builder.PrePromptDialogBuilder
@@ -50,18 +51,22 @@ class Revue internal constructor(private val localStorage: LocalStorage = Shared
     companion object {
         @JvmStatic
         val instance: Revue by lazy { Revue() }
+
+        private lateinit var applicationContext: Context
     }
 
     /**
-     * Initializes Revue by updating tracked data for your app. This should typically be called in
-     * your Application onCreate method, and should not be called more than once.
+     * Initializes Revue by updating tracked data for your app. This should be called in your
+     * Application onCreate method, and should not be called more than once.
      *
-     * Once initialized, this instance must be reused throughout your application.
+     * @param application Your Application class, to be used for getting application context
      */
-    fun init(context: Context) {
+    fun init(application: Application) {
         if (initialized) throw RevueAlreadyInitializedException()
 
-        localStorage.init(context)
+        applicationContext = application.applicationContext
+
+        localStorage.init(applicationContext)
 
         val timesLaunched = localStorage.getInt(TIMES_LAUNCHED_KEY, default = 0)
         localStorage.setInt(TIMES_LAUNCHED_KEY, timesLaunched + 1)

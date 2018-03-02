@@ -24,6 +24,7 @@
 
 package com.github.dmchoull.revue
 
+import android.app.Application
 import android.content.Context
 import com.github.dmchoull.revue.builder.DialogResult
 import com.github.dmchoull.revue.builder.DialogResultCallback
@@ -42,6 +43,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class RevueTest {
+    private lateinit var application: Application
+    private lateinit var applicationContext: Context
     private lateinit var context: Context
     private lateinit var reviewDialog: RevueDialog
     private lateinit var revue: Revue
@@ -50,6 +53,10 @@ internal class RevueTest {
 
     @BeforeEach
     fun setUp() {
+        applicationContext = mock()
+        application = mock {
+            on { applicationContext } doReturn applicationContext
+        }
         context = mock()
         reviewDialog = mock()
         storage = InMemoryStorage()
@@ -81,7 +88,7 @@ internal class RevueTest {
     @Test
     @DisplayName("init sets times launched to 1 when not previously set")
     fun initTimesLaunchedFirstCall() {
-        revue.init(context)
+        revue.init(application)
 
         storage.getInt(TIMES_LAUNCHED_KEY, default = 0) shouldEqual 1
     }
@@ -91,7 +98,7 @@ internal class RevueTest {
     fun initTimesLaunched() {
         storage.setTestValues(TIMES_LAUNCHED_KEY to 1)
 
-        revue.init(context)
+        revue.init(application)
 
         storage.getInt(TIMES_LAUNCHED_KEY, default = 0) shouldEqual 2
     }
@@ -99,10 +106,10 @@ internal class RevueTest {
     @Test
     @DisplayName("init throws an exception if called twice on the same instance")
     fun initThrowsOnSecondCall() {
-        revue.init(context)
+        revue.init(application)
 
         assertThrows(RevueAlreadyInitializedException::class.java) {
-            revue.init(context)
+            revue.init(application)
         }
     }
 
@@ -112,7 +119,7 @@ internal class RevueTest {
         @BeforeEach
         fun setUp() {
             revue.reviewPromptDialogBuilder = mockDialogBuilder()
-            revue.init(context)
+            revue.init(application)
         }
 
         @Nested
@@ -205,7 +212,7 @@ internal class RevueTest {
         @BeforeEach
         fun setUp() {
             revue.reviewPromptDialogBuilder = mockDialogBuilder()
-            revue.init(context)
+            revue.init(application)
             storage.setTestValues(TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED)
         }
 
@@ -238,7 +245,7 @@ internal class RevueTest {
         @BeforeEach
         fun setUp() {
             revue.reviewPromptDialogBuilder = mockDialogBuilder()
-            revue.init(context)
+            revue.init(application)
             storage.setTestValues(TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED - 1)
         }
 
@@ -271,7 +278,7 @@ internal class RevueTest {
         @BeforeEach
         fun setUp() {
             revue.reviewPromptDialogBuilder = mockDialogBuilder()
-            revue.init(context)
+            revue.init(application)
         }
 
         @Test
@@ -337,7 +344,7 @@ internal class RevueTest {
         @BeforeEach
         fun setUp() {
             revue.reviewPromptDialogBuilder = mockDialogBuilder()
-            revue.init(context)
+            revue.init(application)
             storage.setTestValues(ENABLED_KEY to 0, TIMES_LAUNCHED_KEY to DEFAULT_TIMES_LAUNCHED)
         }
 

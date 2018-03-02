@@ -120,7 +120,9 @@ class Revue internal constructor(private val localStorage: LocalStorage = Shared
         val dialogBuilder = prePromptDialogBuilder ?: return
         dialogBuilder
                 .callback { result ->
-                    if (result == DialogResult.POSITIVE) {
+                    if (result == DialogResult.NEGATIVE) {
+                        setDisabled()
+                    } else if (result == DialogResult.POSITIVE) {
                         showReviewDialog(contextRef)
                     }
                 }

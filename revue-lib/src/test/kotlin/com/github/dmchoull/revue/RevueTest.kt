@@ -164,6 +164,21 @@ internal class RevueTest {
             }
 
             @Test
+            @DisplayName("disables if user clicks negative button")
+            fun disablesAfterNegative() {
+                revue.showNow(context)
+
+                argumentCaptor<DialogResultCallback>().apply {
+                    verify(revue.prePromptDialogBuilder)!!.callback(capture())
+                    verify(preReviewDialog).show()
+
+                    firstValue.invoke(DialogResult.NEGATIVE)
+
+                    storage.getInt(ENABLED_KEY, default = 1) shouldEqual 0
+                }
+            }
+
+            @Test
             @DisplayName("resets times launched to zero")
             fun showNowReset() {
                 storage.setTestValues(TIMES_LAUNCHED_KEY to 3)
@@ -273,7 +288,7 @@ internal class RevueTest {
     }
 
     @Nested
-    @DisplayName("when dialog result callback is called")
+    @DisplayName("when review prompt dialog result callback is called")
     inner class Callback {
         @BeforeEach
         fun setUp() {

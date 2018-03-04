@@ -27,10 +27,10 @@ package com.github.dmchoull.revue
 import android.app.Application
 import android.content.Context
 import com.github.dmchoull.revue.builder.DialogResult
-import com.github.dmchoull.revue.builder.DialogResultCallback
 import com.github.dmchoull.revue.builder.RevueDialogBuilder
 import com.github.dmchoull.revue.builder.SimpleDialogBuilder
 import com.github.dmchoull.revue.dialog.RevueDialog
+import com.github.dmchoull.revue.util.DialogResultPromise
 import com.github.dmchoull.revue.util.StoreService
 import com.nhaarman.mockitokotlin2.*
 import org.amshove.kluent.shouldBe
@@ -46,6 +46,7 @@ internal class RevueTest {
     private lateinit var application: Application
     private lateinit var applicationContext: Context
     private lateinit var context: Context
+    private lateinit var reviewDialogPromise: DialogResultPromise
     private lateinit var reviewDialog: RevueDialog
     private lateinit var revue: Revue
     private lateinit var storage: InMemoryStorage
@@ -58,7 +59,10 @@ internal class RevueTest {
             on { applicationContext } doReturn applicationContext
         }
         context = mock()
-        reviewDialog = mock()
+        reviewDialogPromise = DialogResultPromise()
+        reviewDialog = mock {
+            on { show() } doReturn reviewDialogPromise
+        }
         storage = InMemoryStorage()
         storeService = mock()
 
@@ -126,10 +130,13 @@ internal class RevueTest {
         @DisplayName("with pre-review prompt dialog")
         inner class WithPrePrompt {
             private lateinit var preReviewDialog: RevueDialog
+            private val preReviewDialogPromise = DialogResultPromise()
 
             @BeforeEach
             fun setUp() {
-                preReviewDialog = mock()
+                preReviewDialog = mock {
+                    on { show() } doReturn preReviewDialogPromise
+                }
                 revue.prePromptDialogBuilder = mockDialogBuilder(preReviewDialog)
             }
 
@@ -138,14 +145,10 @@ internal class RevueTest {
             fun afterPositive() {
                 revue.showNow(context)
 
-                argumentCaptor<DialogResultCallback>().apply {
-                    verify(revue.prePromptDialogBuilder)!!.callback(capture())
-                    verify(preReviewDialog).show()
+                verify(preReviewDialog).show()
+                preReviewDialogPromise.resolve(DialogResult.POSITIVE)
 
-                    firstValue.invoke(DialogResult.POSITIVE)
-
-                    verify(reviewDialog).show()
-                }
+                verify(reviewDialog).show()
             }
 
             @Test
@@ -153,14 +156,10 @@ internal class RevueTest {
             fun afterNegative() {
                 revue.showNow(context)
 
-                argumentCaptor<DialogResultCallback>().apply {
-                    verify(revue.prePromptDialogBuilder)!!.callback(capture())
-                    verify(preReviewDialog).show()
+                verify(preReviewDialog).show()
+                preReviewDialogPromise.resolve(DialogResult.NEGATIVE)
 
-                    firstValue.invoke(DialogResult.NEGATIVE)
-
-                    verify(reviewDialog, never()).show()
-                }
+                verify(reviewDialog, never()).show()
             }
 
             @Test
@@ -168,14 +167,10 @@ internal class RevueTest {
             fun disablesAfterNegative() {
                 revue.showNow(context)
 
-                argumentCaptor<DialogResultCallback>().apply {
-                    verify(revue.prePromptDialogBuilder)!!.callback(capture())
-                    verify(preReviewDialog).show()
+                verify(preReviewDialog).show()
+                preReviewDialogPromise.resolve(DialogResult.NEGATIVE)
 
-                    firstValue.invoke(DialogResult.NEGATIVE)
-
-                    storage.getInt(ENABLED_KEY, default = 1) shouldEqual 0
-                }
+                storage.getInt(ENABLED_KEY, default = 1) shouldEqual 0
             }
 
             @Test
@@ -299,57 +294,37 @@ internal class RevueTest {
         @Test
         @DisplayName("with a positive result it disables future dialogs")
         fun positiveResultDisables() {
-            argumentCaptor<DialogResultCallback>().apply {
-                revue.showNow(context)
+            revue.showNow(context)
+            reviewDialogPromise.resolve(DialogResult.POSITIVE)
 
-                verify(revue.reviewPromptDialogBuilder).callback(capture())
-
-                firstValue(DialogResult.POSITIVE)
-
-                storage.getInt(ENABLED_KEY, default = 1) shouldEqual 0
-            }
+            storage.getInt(ENABLED_KEY, default = 1) shouldEqual 0
         }
 
         @Test
         @DisplayName("with a positive result it opens the store page for the app")
         fun positiveResultOpensStore() {
-            argumentCaptor<DialogResultCallback>().apply {
-                revue.showNow(context)
+            revue.showNow(context)
+            reviewDialogPromise.resolve(DialogResult.POSITIVE)
 
-                verify(revue.reviewPromptDialogBuilder).callback(capture())
-
-                firstValue(DialogResult.POSITIVE)
-
-                storeService.openAppInStore(context)
-            }
+            storeService.openAppInStore(context)
         }
 
         @Test
         @DisplayName("with a negative result it disables future dialogs")
         fun negativeResult() {
-            argumentCaptor<DialogResultCallback>().apply {
-                revue.showNow(context)
+            revue.showNow(context)
+            reviewDialogPromise.resolve(DialogResult.NEGATIVE)
 
-                verify(revue.reviewPromptDialogBuilder).callback(capture())
-
-                firstValue(DialogResult.NEGATIVE)
-
-                storage.getInt(ENABLED_KEY, default = 1) shouldEqual 0
-            }
+            storage.getInt(ENABLED_KEY, default = 1) shouldEqual 0
         }
 
         @Test
         @DisplayName("with a neutral result it does not disable future dialogs")
         fun neutralResult() {
-            argumentCaptor<DialogResultCallback>().apply {
-                revue.showNow(context)
+            revue.showNow(context)
+            reviewDialogPromise.resolve(DialogResult.NEUTRAL)
 
-                verify(revue.reviewPromptDialogBuilder).callback(capture())
-
-                firstValue(DialogResult.NEUTRAL)
-
-                storage.getInt(ENABLED_KEY, default = 1) shouldEqual 1
-            }
+            storage.getInt(ENABLED_KEY, default = 1) shouldEqual 1
         }
     }
 

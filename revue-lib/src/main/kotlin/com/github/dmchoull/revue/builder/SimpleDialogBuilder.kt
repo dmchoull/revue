@@ -31,6 +31,7 @@ import android.support.v7.app.AlertDialog
 import com.github.dmchoull.revue.R
 import com.github.dmchoull.revue.dialog.RevueDialog
 import com.github.dmchoull.revue.dialog.SimpleRevueDialog
+import com.github.dmchoull.revue.util.DialogResultPromise
 import java.lang.ref.WeakReference
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -57,6 +58,8 @@ open class SimpleDialogBuilder(
     private var _neutralButtonListener = WeakReference(neutralButtonListener)
     private var _negativeButtonListener = WeakReference(negativeButtonListener)
     private var _dismissListener = WeakReference(dismissListener)
+
+    private val promise = DialogResultPromise()
 
     override fun callback(f: DialogResultCallback) = apply { callback = f }
 
@@ -137,7 +140,7 @@ open class SimpleDialogBuilder(
         setDismissListener(dialogBuilder)
 
         val alertDialog = dialogBuilder.create()
-        return SimpleRevueDialog(alertDialog)
+        return SimpleRevueDialog(alertDialog, promise)
     }
 
     private fun setDialogTitle(dialogBuilder: AlertDialog.Builder) {
@@ -165,6 +168,7 @@ open class SimpleDialogBuilder(
 
     private fun onPositiveClick() {
         callback(DialogResult.POSITIVE)
+        promise.resolve(DialogResult.POSITIVE)
     }
 
     private fun setDialogNeutralButton(dialogBuilder: AlertDialog.Builder) {
@@ -180,6 +184,7 @@ open class SimpleDialogBuilder(
 
     private fun onNeutralClick() {
         callback(DialogResult.NEUTRAL)
+        promise.resolve(DialogResult.NEUTRAL)
     }
 
     private fun setDialogNegativeButton(dialogBuilder: AlertDialog.Builder) {
@@ -195,6 +200,7 @@ open class SimpleDialogBuilder(
 
     private fun onNegativeClick() {
         callback(DialogResult.NEGATIVE)
+        promise.resolve(DialogResult.NEGATIVE)
     }
 
     private fun setDismissListener(dialogBuilder: AlertDialog.Builder) {

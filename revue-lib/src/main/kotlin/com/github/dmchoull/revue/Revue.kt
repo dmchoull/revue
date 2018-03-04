@@ -26,7 +26,6 @@ package com.github.dmchoull.revue
 
 import android.app.Application
 import android.content.Context
-import com.github.dmchoull.revue.builder.DialogResult
 import com.github.dmchoull.revue.builder.PrePromptDialogBuilder
 import com.github.dmchoull.revue.builder.ReviewPromptDialogBuilder
 import com.github.dmchoull.revue.builder.RevueDialogBuilder
@@ -119,30 +118,22 @@ class Revue internal constructor(private val localStorage: LocalStorage = Shared
     private fun showPrePromptDialog(contextRef: WeakReference<Context>) {
         val dialogBuilder = prePromptDialogBuilder ?: return
         dialogBuilder
-                .callback { result ->
-                    if (result == DialogResult.NEGATIVE) {
-                        setDisabled()
-                    } else if (result == DialogResult.POSITIVE) {
-                        showReviewDialog(contextRef)
-                    }
-                }
                 .build(contextRef.get()!!)
                 .show()
+                .onPositive { showReviewDialog(contextRef) }
+                .onNegative { setDisabled() }
     }
 
     private fun showReviewDialog(contextRef: WeakReference<Context>) {
         reviewPromptDialogBuilder
-                .callback { result ->
-                    if (result == DialogResult.NEGATIVE) {
-                        setDisabled()
-                    } else if (result == DialogResult.POSITIVE) {
-                        setDisabled()
-                        val context = contextRef.get()
-                        if (context != null) storeService.openAppInStore(context)
-                    }
-                }
                 .build(contextRef.get()!!)
                 .show()
+                .onPositive {
+                    setDisabled()
+                    val context = contextRef.get()
+                    if (context != null) storeService.openAppInStore(context)
+                }
+                .onNegative { setDisabled() }
     }
 
     private fun setDisabled() = localStorage.setInt(ENABLED_KEY, 0)

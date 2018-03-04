@@ -22,16 +22,26 @@
  * SOFTWARE.
  */
 
-package com.github.dmchoull.revue.dialog
+package com.github.dmchoull.revue.util
 
-import android.support.v7.app.AlertDialog
-import com.github.dmchoull.revue.util.DialogResultPromise
+import com.github.dmchoull.revue.builder.DialogResult
 
-abstract class RevueDialog(private val dialog: AlertDialog, private val promise: DialogResultPromise) {
-    open fun show(): DialogResultPromise {
-        dialog.show()
-        return promise
+class DialogResultPromise {
+    private var _positiveCallback: (() -> Unit)? = null
+    private var _negativeCallback: (() -> Unit)? = null
+    private var _neutralCallback: (() -> Unit)? = null
+
+    fun onPositive(callback: () -> Unit) = apply { _positiveCallback = callback }
+
+    fun onNegative(callback: () -> Unit) = apply { _negativeCallback = callback }
+
+    fun onNeutral(callback: () -> Unit) = apply { _neutralCallback = callback }
+
+    fun resolve(result: DialogResult) {
+        when (result) {
+            DialogResult.POSITIVE -> _positiveCallback?.invoke()
+            DialogResult.NEGATIVE -> _negativeCallback?.invoke()
+            DialogResult.NEUTRAL -> _neutralCallback?.invoke()
+        }
     }
 }
-
-class SimpleRevueDialog(dialog: AlertDialog, promise: DialogResultPromise) : RevueDialog(dialog, promise)

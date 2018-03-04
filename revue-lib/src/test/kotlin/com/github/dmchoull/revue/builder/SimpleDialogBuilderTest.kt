@@ -307,4 +307,41 @@ class SimpleDialogBuilderTest {
 
         return result
     }
+
+    interface Dummy {
+        fun call()
+    }
+
+    @Test
+    fun resolvesPromiseOnPositiveClick() {
+        val callback: Dummy = mock()
+        val dialog = SimpleDialogBuilder().build(activity)
+        dialog.show().onPositive { callback.call() }
+
+        clickDialogButton(DialogInterface.BUTTON_POSITIVE)
+
+        verify(callback).call()
+    }
+
+    @Test
+    fun resolvesPromiseOnNeutralClick() {
+        val callback: Dummy = mock()
+        val dialog = SimpleDialogBuilder().build(activity)
+        dialog.show().onNeutral { callback.call() }
+
+        clickDialogButton(DialogInterface.BUTTON_NEUTRAL)
+
+        verify(callback).call()
+    }
+
+    @Test
+    fun resolvesPromiseOnNegativeClick() {
+        val callback: Dummy = mock()
+        val dialog = SimpleDialogBuilder().build(activity)
+        dialog.show().onNegative { callback.call() }
+
+        clickDialogButton(DialogInterface.BUTTON_NEGATIVE)
+
+        verify(callback).call()
+    }
 }

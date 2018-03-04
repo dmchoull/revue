@@ -25,19 +25,22 @@
 package com.github.dmchoull.revue.dialog
 
 import android.support.v7.app.AlertDialog
+import com.github.dmchoull.revue.util.DialogResultPromise
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
+import org.amshove.kluent.shouldBe
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 internal class RevueDialogTest {
     @Test
-    @DisplayName("shows the alert dialog")
+    @DisplayName("shows the alert dialog and returns dialog result promise")
     fun show() {
         val alertDialog: AlertDialog = mock()
-        val revueDialog = SimpleRevueDialog(alertDialog)
+        val promise = DialogResultPromise()
+        val revueDialog = SimpleRevueDialog(alertDialog, promise)
 
-        revueDialog.show()
+        revueDialog.show() shouldBe promise
 
         verify(alertDialog).show()
     }

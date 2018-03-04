@@ -27,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
         radioDialogType.setOnCheckedChangeListener((group, checkedId) -> setDialogBuilder(checkedId));
         setDialogBuilder(radioDialogType.getCheckedRadioButtonId());
 
+        // If you want to take some activity specific action based on the user's interaction with
+        // the dialog, you can set a callback on an existing dialog builder
+
         //noinspection ConstantConditions
         revue.getPrePromptDialogBuilder().callback(result -> {
             if (result == DialogResult.NEGATIVE) {
@@ -39,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
         RevueDialogBuilder builder;
 
         if (checkedId == R.id.radioSimple) {
+            // Replace the dialog builder if you want to override some default values
+
             builder = new ReviewPromptDialogBuilder()
                     .title("Thank you!")
                     .message(R.string.rating_message)

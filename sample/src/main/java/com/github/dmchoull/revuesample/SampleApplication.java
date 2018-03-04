@@ -18,7 +18,11 @@ public class SampleApplication extends Application {
         }
         LeakCanary.install(this);
 
+        // Call init once in the application's onCreate so Revue can updated tracked data such as
+        // times launched, etc.
         revue.init(this);
+
+        // Optional: override default configuration values by setting your own instance of RevueConfig
         revue.setConfig(new RevueConfig(2));
     }
 }

@@ -28,7 +28,7 @@ import android.content.DialogInterface
 import com.github.dmchoull.revue.R
 
 class PrePromptDialogBuilder(
-        callback: DialogResultCallback = {},
+        callback: DialogResultCallback? = null,
         title: String? = null,
         titleRes: Int = R.string.default_prompt_title,
         message: String? = null,

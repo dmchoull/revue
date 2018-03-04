@@ -36,7 +36,7 @@ import java.lang.ref.WeakReference
 
 @Suppress("MemberVisibilityCanBePrivate")
 open class SimpleDialogBuilder(
-        private var callback: DialogResultCallback = {},
+        callback: DialogResultCallback? = null,
         private var title: String? = null,
         private var titleRes: Int = R.string.default_rate_title,
         private var message: String? = null,
@@ -54,6 +54,7 @@ open class SimpleDialogBuilder(
         private var withoutNegativeButton: Boolean = false,
         private var withoutNeutralButton: Boolean = false
 ) : RevueDialogBuilder {
+    private var _callback = WeakReference(callback)
     private var _positiveButtonListener = WeakReference(positiveButtonListener)
     private var _neutralButtonListener = WeakReference(neutralButtonListener)
     private var _negativeButtonListener = WeakReference(negativeButtonListener)
@@ -61,7 +62,8 @@ open class SimpleDialogBuilder(
 
     private val promise = DialogResultPromise()
 
-    override fun callback(f: DialogResultCallback) = apply { callback = f }
+    override fun callback(dialogResultCallback: DialogResultCallback) =
+            apply { _callback = WeakReference(dialogResultCallback) }
 
     fun title(title: String) = apply { this.title = title }
 
@@ -158,7 +160,7 @@ open class SimpleDialogBuilder(
     }
 
     private fun setDialogPositiveButton(dialogBuilder: AlertDialog.Builder) {
-        val listener = dialogClickListener(_positiveButtonListener.get(), this::onPositiveClick)
+        val listener = dialogClickListener(_positiveButtonListener.get(), { onPositiveClick() })
 
         when (positiveButton) {
             is String -> dialogBuilder.setPositiveButton(positiveButton, listener)
@@ -167,14 +169,14 @@ open class SimpleDialogBuilder(
     }
 
     private fun onPositiveClick() {
-        callback(DialogResult.POSITIVE)
+        _callback.get()?.onResult(DialogResult.POSITIVE)
         promise.resolve(DialogResult.POSITIVE)
     }
 
     private fun setDialogNeutralButton(dialogBuilder: AlertDialog.Builder) {
         if (withoutNeutralButton) return
 
-        val listener = dialogClickListener(_neutralButtonListener.get(), this::onNeutralClick)
+        val listener = dialogClickListener(_neutralButtonListener.get(), { onNeutralClick() })
 
         when (neutralButton) {
             is String -> dialogBuilder.setNeutralButton(neutralButton, listener)
@@ -183,14 +185,14 @@ open class SimpleDialogBuilder(
     }
 
     private fun onNeutralClick() {
-        callback(DialogResult.NEUTRAL)
+        _callback.get()?.onResult(DialogResult.NEUTRAL)
         promise.resolve(DialogResult.NEUTRAL)
     }
 
     private fun setDialogNegativeButton(dialogBuilder: AlertDialog.Builder) {
         if (withoutNegativeButton) return
 
-        val listener = dialogClickListener(_negativeButtonListener.get(), this::onNegativeClick)
+        val listener = dialogClickListener(_negativeButtonListener.get(), { onNegativeClick() })
 
         when (negativeButton) {
             is String -> dialogBuilder.setNegativeButton(negativeButton, listener)
@@ -199,7 +201,7 @@ open class SimpleDialogBuilder(
     }
 
     private fun onNegativeClick() {
-        callback(DialogResult.NEGATIVE)
+        _callback.get()?.onResult(DialogResult.NEGATIVE)
         promise.resolve(DialogResult.NEGATIVE)
     }
 

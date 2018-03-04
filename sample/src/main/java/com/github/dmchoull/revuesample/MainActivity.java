@@ -10,6 +10,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.github.dmchoull.revue.Revue;
+import com.github.dmchoull.revue.builder.DialogResult;
 import com.github.dmchoull.revue.builder.ReviewPromptDialogBuilder;
 import com.github.dmchoull.revue.builder.RevueDialogBuilder;
 
@@ -25,6 +26,13 @@ public class MainActivity extends AppCompatActivity {
         RadioGroup radioDialogType = findViewById(R.id.radioDialogType);
         radioDialogType.setOnCheckedChangeListener((group, checkedId) -> setDialogBuilder(checkedId));
         setDialogBuilder(radioDialogType.getCheckedRadioButtonId());
+
+        //noinspection ConstantConditions
+        revue.getPrePromptDialogBuilder().callback(result -> {
+            if (result == DialogResult.NEGATIVE) {
+                Toast.makeText(this, "We appreciate your feedback", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setDialogBuilder(int checkedId) {

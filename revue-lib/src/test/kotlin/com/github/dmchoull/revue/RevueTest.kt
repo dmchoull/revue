@@ -32,7 +32,10 @@ import com.github.dmchoull.revue.builder.SimpleDialogBuilder
 import com.github.dmchoull.revue.dialog.RevueDialog
 import com.github.dmchoull.revue.util.DialogResultPromise
 import com.github.dmchoull.revue.util.StoreService
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.doReturn
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.never
+import com.nhaarman.mockitokotlin2.verify
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldBeInstanceOf
 import org.amshove.kluent.shouldEqual
@@ -212,7 +215,6 @@ internal class RevueTest {
     }
 
     private fun mockDialogBuilder(dialog: RevueDialog = reviewDialog) = mock<RevueDialogBuilder> {
-        on { callback(any()) } doReturn it
         on { build(context) } doReturn dialog
     }
 
@@ -283,8 +285,8 @@ internal class RevueTest {
     }
 
     @Nested
-    @DisplayName("when review prompt dialog result callback is called")
-    inner class Callback {
+    @DisplayName("when review prompt dialog result promise is resolved")
+    inner class ReviewDialogResult {
         @BeforeEach
         fun setUp() {
             revue.reviewPromptDialogBuilder = mockDialogBuilder()

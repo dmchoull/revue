@@ -160,7 +160,8 @@ open class SimpleDialogBuilder(
     }
 
     private fun setDialogPositiveButton(dialogBuilder: AlertDialog.Builder) {
-        val listener = dialogClickListener(_positiveButtonListener.get(), { onPositiveClick() })
+        val callback = _callback.get()
+        val listener = dialogClickListener(_positiveButtonListener.get(), { onPositiveClick(callback) })
 
         when (positiveButton) {
             is String -> dialogBuilder.setPositiveButton(positiveButton, listener)
@@ -168,15 +169,16 @@ open class SimpleDialogBuilder(
         }
     }
 
-    private fun onPositiveClick() {
-        _callback.get()?.onResult(DialogResult.POSITIVE)
+    private fun onPositiveClick(callback: DialogResultCallback?) {
+        callback?.onResult(DialogResult.POSITIVE)
         promise.resolve(DialogResult.POSITIVE)
     }
 
     private fun setDialogNeutralButton(dialogBuilder: AlertDialog.Builder) {
         if (withoutNeutralButton) return
 
-        val listener = dialogClickListener(_neutralButtonListener.get(), { onNeutralClick() })
+        val callback = _callback.get()
+        val listener = dialogClickListener(_neutralButtonListener.get(), { onNeutralClick(callback) })
 
         when (neutralButton) {
             is String -> dialogBuilder.setNeutralButton(neutralButton, listener)
@@ -184,15 +186,16 @@ open class SimpleDialogBuilder(
         }
     }
 
-    private fun onNeutralClick() {
-        _callback.get()?.onResult(DialogResult.NEUTRAL)
+    private fun onNeutralClick(callback: DialogResultCallback?) {
+        callback?.onResult(DialogResult.NEUTRAL)
         promise.resolve(DialogResult.NEUTRAL)
     }
 
     private fun setDialogNegativeButton(dialogBuilder: AlertDialog.Builder) {
         if (withoutNegativeButton) return
 
-        val listener = dialogClickListener(_negativeButtonListener.get(), { onNegativeClick() })
+        val callback = _callback.get()
+        val listener = dialogClickListener(_negativeButtonListener.get(), { onNegativeClick(callback) })
 
         when (negativeButton) {
             is String -> dialogBuilder.setNegativeButton(negativeButton, listener)
@@ -200,8 +203,8 @@ open class SimpleDialogBuilder(
         }
     }
 
-    private fun onNegativeClick() {
-        _callback.get()?.onResult(DialogResult.NEGATIVE)
+    private fun onNegativeClick(callback: DialogResultCallback?) {
+        callback?.onResult(DialogResult.NEGATIVE)
         promise.resolve(DialogResult.NEGATIVE)
     }
 

@@ -22,17 +22,18 @@
  * SOFTWARE.
  */
 
-package com.github.dmchoull.revue.builder
+package com.github.dmchoull.revue.builder;
 
-import android.content.Context
-import com.github.dmchoull.revue.dialog.RevueDialog
-
-interface RevueDialogBuilder {
-    fun callback(dialogResultCallback: DialogResultCallback): RevueDialogBuilder
-
-    fun build(context: Context): RevueDialog
-}
-
-enum class DialogResult {
-    POSITIVE, NEGATIVE, NEUTRAL
+/**
+ * Java-friendly functional interface that can be used to receive a callback with the result of the
+ * user's interaction with the dialog
+ */
+@FunctionalInterface
+public interface DialogResultCallback {
+    /**
+     * Called when the user interacts with the dialog
+     *
+     * @param result a {@code DialogResult} indicating what action the user took
+     */
+    void onResult(DialogResult result);
 }

@@ -29,7 +29,10 @@ import android.content.DialogInterface
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
 import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldEqual
 import org.junit.Before
@@ -296,16 +299,10 @@ class SimpleDialogBuilderTest {
 
     private fun clickWithCallback(button: Int): DialogResult? {
         var result: DialogResult? = null
-        val callback: DialogResultCallback = mock()
-        val dialog = SimpleDialogBuilder(callback = callback).build(activity)
+        val dialog = SimpleDialogBuilder(callback = DialogResultCallback { result = it }).build(activity)
 
         dialog.show()
         clickDialogButton(button)
-
-        argumentCaptor<DialogResult>().apply {
-            verify(callback).onResult(capture())
-            result = firstValue
-        }
 
         return result
     }
